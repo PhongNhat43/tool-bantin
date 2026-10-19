@@ -212,3 +212,45 @@ deno test --env-file=.env --allow-net --allow-env --allow-read supabase/function
 ```
 
 - Commit code: `79485ce` (chỉ 2 file mới: `scoring.ts` + `scoring_test.ts`; không đụng `config.toml` đang thay đổi ngoài task).
+
+## 2026-10-19 — Task 2.2: `_shared/notify.ts` (gửi Telegram + chống gửi trùng)
+
+**Mục đích:** lib gửi thông báo để `run-cycle` (2.0) gọi sau khi chấm điểm — tin ≥70 (hoặc trigger báo ngay) đi ngay, tin 40–69 gom digest, không gửi trùng 1 tin 2 lần.
+
+**Đã làm — `supabase/functions/_shared/notify.ts`:**
+- Export `NotifyItem`, `sendInstant(supabase, item, fetchFn = fetch)`, `sendDigest(supabase, items, fetchFn = fetch)`, `buildInstantText`, `buildDigestText`, `NotifyDb`/`NotifyDbResult`/`NotifyTable`/`NotifyQuery`/`NotifyFetch`.
+- **Instant:** `<b>tiêu đề</b>` + dòng meta `nguồn · điểm · lý do` + `<a href="…">Mở bài gốc</a>`; `disable_web_page_preview=false`.
+- **Digest:** đúng 1 tin nhắn/lô, header `📰 Bản tin AI — dd/mm/yyyy` (giờ VN UTC+7), bullet `• [điểm] tiêu đề — nguồn · link`; `disable_web_page_preview=true`.
+- **Chống trùng:** query `notification_log` `(item_id, channel='telegram')` trước khi gửi; digest query 1 lần bằng `.in` cho cả lô. Chỉ insert log khi HTTP ok VÀ body `{ok:true}`; lỗi mạng/Telegram → throw, không log (DECISIONS #40). Bỏ item đã có log khỏi digest; hết tin chưa gửi → `skipped`.
+- **HTML:** escape `<`, `>`, `&` (+ `"` trong href); cắt tiêu đề >150 ký tự kèm `…`.
+- **Vượt 4096:** bỏ dần bullet cuối + dòng `…và N tin khác`; CHỈ log item thực sự còn trong tin nhắn (DECISIONS #41).
+- `supabase` truyền từ ngoài qua interface tối thiểu `NotifyDb`; đã verify `SupabaseClient` thật gán được (phải để `from(): unknown` vì generic Postgrest gây TS2589).
+
+**Test — `supabase/functions/_shared/notify_test.ts` (9 test, offline, mock DB + mock fetch):**
+1. instant format đúng: bold title, meta, link escape `&`, preview bật, log sau khi gửi.
+2. gửi lại cùng item → `skipped`, fetch chỉ gọi 1 lần, chỉ 1 row log.
+3. digest 3 item → 1 message, đúng 3 bullet, preview tắt, log 3 id; gọi lại → `skipped`.
+4. tiêu đề `<script> & "AI" >` bị escape (không còn thẻ thô) + tiêu đề 200 ký tự bị cắt còn `…`.
+5. digest 40 item dài → ≤4096, có `…và N tin khác`, N = số bullet bị bỏ, **chỉ log bullet đã gửi**.
+6. thiếu env → throw nêu đúng tên biến, không gọi fetch, không query DB (test cả ca thiếu 1 biến).
+7. Telegram `ok:false` / HTTP 500 / lỗi mạng → throw, không ghi log.
+8. lô đã gửi hết → `skipped`; lô trộn chỉ gửi + log tin chưa gửi; lô rỗng → `skipped`.
+9. `buildDigestText` cắt đúng số bullet, đúng ngày VN.
+
+**Nghiệm thu gửi THẬT vào group "Bản tin AI" (bot @tool_batin_ai_bot):**
+- Chọn item thật chưa có log: `527dff56-c1c8-4448-8d5a-c75c42551cfa` (nguồn FB "Cộng đồng Claude AI & AI Agents Việt Nam", chấm thật bằng `scoreItem` → **70 điểm**, `notify_now=true`, reason `nhóm A + engagement hot (125)`).
+- `sendInstant` lần 1 → `sent` (Telegram calls=1); lần 2 → `skipped` (vẫn calls=1) → chống trùng chạy đúng với DB thật.
+- Xoá đúng row log vừa tạo → `1 row`; kiểm tra lại `0 row`. `notification_log` toàn bảng = 0 row.
+- ⚠️ **Blind spot bắt được:** `NOTIFY_CHAT_ID` trong `.env` ban đầu là **user id** (5861…440) → Telegram trả `Forbidden: bot can't initiate conversation with a user`. Đã dò bằng `getUpdates` → group "Bản tin AI" = `-1004434350401`; sửa lại `.env` (không commit) rồi gửi OK. **Từ giờ `NOTIFY_CHAT_ID` phải là id group (số âm, `-100…`), không phải user id.**
+- Ca lỗi trên cũng xác nhận luật #40 bằng thực tế: gửi bị từ chối → **không có row nào** trong `notification_log`.
+
+**Log chạy:**
+```
+deno check supabase/functions/ → Checked 18 files
+deno lint  supabase/functions/ → Checked 18 files
+deno test --allow-env supabase/functions/_shared/notify_test.ts → 9 passed | 0 failed
+deno test --env-file=.env --allow-net --allow-env --allow-read supabase/functions/ → 26 passed (6 steps) | 0 failed
+```
+
+- Commit code: `5e3e9de` (2 file mới: `notify.ts` + `notify_test.ts`).
+- Ghi chú DB: Merlin đã bắn dữ liệu Facebook thật → DB hiện **88 items** (github 19 + hackernews 15 + rss 30 + facebook 24), `notification_log` 0 row.
