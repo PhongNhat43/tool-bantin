@@ -87,3 +87,15 @@
 - `TASKS.md` bị ghi đè mất dấu `[x]` **lần thứ 2** (0.1–0.4, 1.1, 1.2, 1.4) khi Phong cập nhật (lần này thêm Phase 4). Đã re-apply + thêm 1.5. Cần thống nhất cách để không lặp lại.
 - 3 commit chưa push: `ef2b0a5`, `f473758`, `a6cfb54` + `e0510af` (code 1.5) + commit docs này = 5.
 - Commit: code `e0510af`; docs (mục WORKLOG này) là commit kế tiếp.
+
+## 2026-10-19 — Chốt 2 việc treo của Task 1.5 (Phong duyệt)
+
+- **Test được commit vào repo** (DECISIONS #30). Đã chuyển 2 file test từ thư mục tạm thành dạng `Deno.test`:
+  - `supabase/functions/_shared/xml_test.ts` — 5 test (entity, Atom, RSS 2.0/DOCTYPE/`dc:`, XML hỏng, feed thật 106KB).
+  - `supabase/functions/rss-collector/index_test.ts` — 1 test / 6 step (retry 404/410/429/500/lỗi mạng, feed chết không ghi checkpoint, cô lập lỗi, content sạch, source thật không bị đụng).
+  - Tự viết `eq()`/`throws()`, **không thêm thư viện assert** (AGENTS.md mục 1).
+  - Lệnh chạy: `deno test --allow-net --allow-env --allow-read supabase/functions/` → **6 passed (6 steps), 0 failed**.
+  - Test nhánh lỗi ghi thật vào DB (tạo/xoá 6 source tên `[TEST] ...`), cần `SUPABASE_SERVICE_ROLE_KEY`. Đã verify sau khi chạy: DB còn đúng 3 source thật, 63 item, không sót row `[TEST]`.
+  - Ghi chú kỹ thuật: import `./index.ts` trong test sẽ chạy nhánh `Deno.serve` (vì không có `--once`) nên Deno in "Listening on http://0.0.0.0:8000/" — vô hại, `deno test` vẫn thoát bình thường (đã thử riêng để chắc).
+- **TASKS.md**: Phong sẽ sửa trên bản hiện tại (đang có dấu `[x]`) thay vì copy từ bản cũ → không cần re-apply nữa (DECISIONS #31).
+- Commit: code test + docs trong cùng commit bàn giao này.
