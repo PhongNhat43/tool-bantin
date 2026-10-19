@@ -12,8 +12,8 @@
 - [x] 1.2 `github-collector`: search repos AI coding agents/MCP/automation, tạo ≤ 14 ngày, stars > 50, có README + commit gần đây, checkpoint `last_seen` (19/10, 6253a0c + patch 1.2b)
 - [ ] 1.3 `reddit-collector`: đọc `/r/<sub>/new.json` với sub = ClaudeAI, AI_Agents (lấy từ bảng `sources`) — **DỜI xuống cuối Phase 1** (chờ phê duyệt API Reddit 2–4 tuần, xem DECISIONS #10)
 - [x] 1.4 `hackernews-collector`: Algolia API, query "Claude Code"/"AI coding", points ≥ 30 (19/10, b63e13a)
-- [ ] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news) — **← TASK TIẾP THEO**
-- [ ] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert
+- [x] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news) (19/10, e0510af — kèm `_shared/xml.ts`; **Anthropic KHÔNG có feed chính thức, đã verify 15 URL + sitemap → chỉ seed Simon Willison**)
+- [ ] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert — **← TASK TIẾP THEO**
 - [ ] 1.7 `youtube-collector`: ĐỂ V2, không làm (không tính là task Phase 1)
   - Tiêu chí xong mỗi collector: chạy 1 lệnh, log rõ fetch/new/dedup, dữ liệu vào đúng bảng `items`
 
@@ -29,6 +29,14 @@
 - [ ] 3.2 Trang Feed đúng demo: 3 khối (Cần xem ngay ≥70 / Hôm nay 40–69 / Tất cả + search + filter nguồn/chủ đề), hàng ngang kiểu Feedly (ô score vuông bo góc trái + tiêu đề/meta phải), bấm expand hiện mô tả + breakdown điểm + link gốc; theme light mặc định + toggle dark; nút "Chạy ngay" gọi run-cycle
 - [ ] 3.3 Trang Nguồn: danh sách + toggle bật/tắt + form thêm nguồn (field động theo loại) — đúng yêu cầu "thêm tay nguồn mới"
   - Tiêu chí xong: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa
+
+## Phase 4 — Khai thác & tương tác (AI layer) — ý tưởng chốt 19/10/2026, làm sau khi Phase 1–3 vận hành trơn
+Mục đích: biến thông tin thành hành động — không để tin nằm chết trong dashboard.
+- [ ] 4.1 Bookmark: nút lưu tin trên dashboard + Telegram; bảng mới `saved_items` (item_id, note, created_at)
+- [ ] 4.2 Thảo luận với AI: nút "Thảo luận" trên mỗi tin → khung chat trên dashboard, AI đọc sẵn nội dung tin để bàn cùng (tóm tắt sâu, phân tích áp dụng, mặt trái); sau mở rộng sang Telegram (reply vào tin nhắn). Dùng model rẻ (Gemini Flash).
+- [ ] 4.3 Briefing AI: tối Chủ nhật hàng tuần tự tổng hợp tin hot thành bản "tuần này có gì" (xu hướng + điểm đáng chú ý), gửi Telegram — khác digest ở chỗ diễn giải chứ không liệt kê
+- [ ] 4.4 Gợi ý theo mục tiêu (v2 của Phase 4): gắn nhãn tin liên quan tới mục tiêu của user (Flutter, app tiếng Nhật...), làm sau khi có dữ liệu dùng thật
+  - Chi phí ước tính < $1/tháng (model rẻ, tần suất thấp). Tiêu chí xong: bookmark lưu được, chat thảo luận trả lời đúng ngữ cảnh tin, briefing Chủ nhật gửi đúng hẹn
 
 ## Ghi chú
 - Task nào cũng phải chạy thử được trước khi đánh dấu xong.

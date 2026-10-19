@@ -52,3 +52,38 @@
 - Cập nhật HANDOFF: gỡ cảnh báo thứ tự mục, đánh dấu demo đã có, cập nhật trạng thái push.
 - Kết quả test: không có code mới; verify bằng `grep -n "^## "`, `diff sort`, `grep` quét secret trên file demo.
 - Commit: `docs: sửa thứ tự AGENTS.md (mục 7 xuống cuối) + thêm dashboard-demo.html`.
+
+## 2026-10-19 — Task 1.5: rss-collector (+ _shared/xml.ts) — commit `e0510af`
+
+**1. Việc đã làm**
+- Thêm `supabase/functions/_shared/xml.ts`: parser XML tối giản cho RSS 2.0/Atom/RDF — xử lý CDATA, comment, DOCTYPE kể cả internal subset, 5 entity XML + numeric + entity HTML thường gặp, attribute không quote, lột prefix namespace (`dc:creator` → `creator`); XML hỏng thì throw kèm số dòng + offset.
+- Thêm `supabase/functions/rss-collector/index.ts`: chạy hết mọi source `type=rss` enabled; mỗi feed 1 try/catch riêng; lọc entry theo `config.last_seen`; `normalize()`; upsert `onConflict(source_id, external_id)`; ghi lại checkpoint.
+- Seed 1 row `sources`: `type='rss'`, name="Simon Willison", `config={"url":"https://simonwillison.net/atom/everything/"}`.
+
+**2. Hai thứ lệch so với spec — đã báo trước khi làm (mục 7.7)**
+- **`DOMParser` không tồn tại trong Deno 2.9.7** (`typeof DOMParser === "undefined"`, thử cả file `.ts` riêng và `--unstable*`). Đây là API của trình duyệt, Deno không ship DOM. Không thể vừa "dùng DOMParser có sẵn" vừa "không thêm dependency" → Phong chọn tự viết `_shared/xml.ts`. Ghi vào DECISIONS #23.
+- **Anthropic không có RSS/Atom chính thức**: 15 URL ứng viên (`/news/rss.xml`, `/rss.xml`, `/feed`, `/news/feed`, `/index.xml`, `/blog/rss.xml`, `/engineering/rss.xml`, `feed.anthropic.com`…) đều 404; trang `/news` không có `<link rel="alternate">` và không chứa chuỗi `feed`; sitemap 566 `<loc>` không có URL feed nào. → chỉ seed Simon Willison, không bịa URL (DECISIONS #28).
+
+**3. Ba chỗ phải sửa khi chạy thật (không phải bịa, do đọc feed thật mới thấy)**
+- **author luôn null**: feed Simon Willison có **0/30 entry** khai `<author>`, chỉ khai ở cấp feed → thêm fallback author cấp feed (DECISIONS #24).
+- **content bị escape 2 tầng**: Atom để `&amp;lt;script&amp;gt;` → parse xong còn `&lt;script&gt;` → sau khi lột thẻ phải **giải entity lần 2** mới ra `<script>`. Ban đầu làm thiếu bước này nên 6 row hiện `&lt;script&gt;` sai. Thứ tự bắt buộc: lột thẻ trước, giải entity sau (giải trước thì `<script>` vừa hiện ra bị xoá luôn). Ghi vào DECISIONS #26.
+- Câu log retry ghi "lỗi mạng" cho cả HTTP 429/5xx → sửa lại cho đúng.
+
+**4. Kết quả test (đã show log)**
+- `_shared/xml.ts`: **35/35 pass** — Atom, RSS 2.0 (có DOCTYPE + internal subset + `dc:`), CDATA, entity (XML/numeric/HTML), attr đảo thứ tự/không quote, 4 loại XML hỏng đều throw. Parse feed thật **106 KB trong 6.1 ms**.
+- Collector chạy 2 lần: lần 1 `30 entry thô → upsert mới: 30 | bỏ qua do trùng: 0`, checkpoint → `2026-10-18T23:43:09.000Z`; lần 2 `0 entry mới hơn | bỏ qua vì cũ hơn: 30`, `upsert mới: 0`, checkpoint không đổi.
+- Chống trùng: xoá `last_seen` chạy lại → `upsert mới: 0 | bỏ qua do trùng: 30`.
+- Test nhánh lỗi bằng mock `globalThis.fetch` (DECISIONS #17): **27/27 pass** — 404/410 gọi đúng 1 lần và không ghi checkpoint/không tắt enabled; 429 thử lại 4 lần rồi dừng êm; 500×2 rồi 200 → retry đúng 3 lần và lấy được tin; lỗi mạng thử lại 4 lần; XML hỏng bắt ở cấp source → **5/7 feed vẫn chạy xong**.
+- Content sau cùng: 30/30 row có content, dài 186–1001 ký tự, **0 row còn thẻ HTML thật**, 11 row bị cắt 1000 ký tự.
+- DB sau task: 3 source (github, hackernews, rss/Simon Willison), **63 item** (33 cũ + 30 rss), mọi `score = 0`.
+
+**5. Lưu ý cho model sau**
+- Test nằm ở thư mục tạm, KHÔNG commit (repo vẫn không có file test — giống các task trước).
+- Anthropic muốn có tin thì phải scrape HTML `/news` hoặc tìm nguồn thứ ba, KHÔNG đoán URL feed.
+- `MAX_CONTENT_CHARS = 1000` trong `rss-collector/index.ts` là hằng số chỉnh được.
+- File mới cần cho Phase 2: chưa có. `_shared/xml.ts` chỉ rss-collector dùng.
+
+**6. Việc còn treo**
+- `TASKS.md` bị ghi đè mất dấu `[x]` **lần thứ 2** (0.1–0.4, 1.1, 1.2, 1.4) khi Phong cập nhật (lần này thêm Phase 4). Đã re-apply + thêm 1.5. Cần thống nhất cách để không lặp lại.
+- 3 commit chưa push: `ef2b0a5`, `f473758`, `a6cfb54` + `e0510af` (code 1.5) + commit docs này = 5.
+- Commit: code `e0510af`; docs (mục WORKLOG này) là commit kế tiếp.
