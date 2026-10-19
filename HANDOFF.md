@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 19/10/2026 (sau Task 1.4 + backfill docs)_
+_Cập nhật lần cuối: 19/10/2026 (sau khi AGENTS.md mục 7 — quy trình bàn giao — được ban hành)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -14,15 +14,18 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.4 + backfill docs)_
   - [ ] 1.3 reddit-collector — DỜI CUỐI Phase 1 (chờ quyết định phê duyệt API Reddit)
   - [ ] 1.5 rss-collector — TASK TIẾP THEO
   - [ ] 1.6 ingest-facebook — endpoint nhận JSON do Merlin bắn vào (spec riêng)
-- **Phase 2:** final plan đã chốt (AGENTS.md mục 6), chưa ra prompt chi tiết
-- **Phase 3:** thiết kế dashboard đã chốt (demo dashboard-demo.html v2, light mặc định, Feedly tối giản), implement sau Phase 2
+- **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3. Chưa code.
+- **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ⚠️ `dashboard-demo.html` được tham chiếu ở AGENTS.md §5, TASKS.md Phase 3 và HANDOFF nhưng **CHƯA có file này trong repo** — model mới không có demo để đối chiếu.
 
 ## Dữ liệu & repo hiện tại
 - DB: 33 items (github 19 + hackernews 14), cột score = 0 (chưa chấm — việc của Task 2.1)
-- GitHub: đã push, main sạch, working tree sạch
+- GitHub: `origin/main` = `b63e13a`; có **1 commit local chưa push** (`ef2b0a5` docs). Working tree đang có thay đổi docs chưa commit.
 
 ## Quyết định đang treo
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay tuần này, chờ 2–4 tuần) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1
+- **Thứ tự mục AGENTS.md:** mục 7 đang nằm trước mục 6 → có chuyển mục 7 xuống cuối để đọc đúng 1→7 không?
+- **dashboard-demo.html:** bổ sung file demo vào repo, hay bỏ các tham chiếu tới nó trong AGENTS.md/TASKS.md?
+- **Push:** có **2 commit local chưa push** (`ef2b0a5`, `c473474`) — agent không có credential nên phải nhờ Phong push tay.
 
 ## Lưu ý cho model mới
 - Đọc DECISIONS.md trước khi đề xuất bất kỳ thay đổi thiết kế nào — không đề xuất lại thứ đã chốt
@@ -31,5 +34,6 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.4 + backfill docs)_
 - **Runtime:** Deno 2.9.7 đã cài qua brew. Chạy 1 collector local bằng
   `deno run --allow-net --allow-env --allow-read index.ts --once` (thêm `--once`, nếu không nó sẽ chạy `Deno.serve` và treo).
 - **Push GitHub:** repo **private**. Shell của agent **không có credential** nên không tự push được — phải nhờ Phong push tay.
-- ⚠️ **AGENTS.md hiện CHƯA có mục 7** (mới có 6 mục) dù cơ chế bàn giao đã được ghi ở DECISIONS #13 — chờ Phong bổ sung.
-- Phân vân thì xem `DECISIONS.md` #14–#18 cho các quyết định kỹ thuật của Phase 1 (entrypoint, gộp trùng HN, URL fallback, cách test nhánh lỗi).
+- ✅ **AGENTS.md đã có mục 7** (quy trình làm việc & bàn giao) — bắt buộc tuân thủ: 1 task = 1 commit, append WORKLOG/DECISIONS, cập nhật HANDOFF, push khi được yêu cầu.
+- ⚠️ **Thứ tự mục trong AGENTS.md đang sai:** mục 7 nằm TRƯỚC mục 6 (dòng 33 vs 46) → đọc thành 1,2,3,4,5,7,6. Đang chờ Phong quyết có sửa không.
+- Phân vân thì xem `DECISIONS.md` #14–#22: #14–#18 là quyết định kỹ thuật Phase 1, #20 gỡ vênh orchestrator, #21 chốt chi tiết scoring, #22 mục 7 có hiệu lực.

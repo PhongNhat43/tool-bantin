@@ -34,3 +34,14 @@
 - **Task 0.1 chưa từng có mục riêng trong WORKLOG** (làm trực tiếp trên Supabase dashboard) — đã bổ sung dấu [x] trong TASKS.md.
 - **Số liệu verify 19/10:** DB có 33 items (github 19 + hackernews 14), mọi `score` = 0; bảng `sources` có 2 row (github, hackernews) đều `enabled=true`.
 - **Kiểm tra nhánh lỗi** của cả 2 collector được làm bằng mock `globalThis.fetch` (offline, tất định) — xem DECISIONS #17.
+
+## 2026-10-19 — Ban hành AGENTS.md mục 7 + đồng bộ docs (chưa phải task trong TASKS.md)
+- Phát hiện lúc đầu: AGENTS.md **chưa có mục 7** (chỉ 6 mục, md5 bản trên đĩa khớp bản trong git) → đã báo lại thay vì tự bịa luật. Phong bổ sung mục 7 sau đó.
+- **TASKS.md bị ghi đè** khi Phong cập nhật (mất hết dấu `[x]` đã backfill) → re-apply dấu `[x]` + ngày + commit hash cho 0.1–0.4, 1.1, 1.2, 1.4 theo đúng format mục 7.4.
+- Append DECISIONS #20 (gỡ vênh #7 vs TASKS 2.3: run-cycle là orchestrator, pg_cron gọi qua pg_net), #21 (chốt chi tiết scoring), #22 (mục 7 có hiệu lực).
+- Cập nhật HANDOFF: bỏ cảnh báo "chưa có mục 7", ghi nhận 2 blind spot mới (xem dưới), cập nhật trạng thái push.
+- **Blind spot đã báo, KHÔNG tự sửa:**
+  1. Thứ tự mục AGENTS.md sai — mục 7 nằm TRƯỚC mục 6 (dòng 33 vs 46).
+  2. `dashboard-demo.html` được tham chiếu ở AGENTS.md §5, TASKS.md Phase 3, HANDOFF.md nhưng **không có file trong repo**.
+- Kết quả test: không có code mới; verify bằng `find`/`grep`/`md5`/`git diff` (log ở phần bàn giao).
+- Commit: `docs: ban hành AGENTS.md mục 7 + đồng bộ docs` (chính là commit chứa mục WORKLOG này).
