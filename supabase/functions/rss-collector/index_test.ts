@@ -11,9 +11,7 @@
  * rồi xoá ở bước cuối (item xoá theo cascade). Cần `SUPABASE_URL` và
  * `SUPABASE_SERVICE_ROLE_KEY` trong env. Không đụng tới các source thật.
  *
- * Lưu ý: import `./index.ts` sẽ chạy nhánh `Deno.serve` (vì không có cờ `--once`)
- * nên Deno in ra "Listening on http://0.0.0.0:8000/" — vô hại, cổng không được
- * dùng tới. Collector được gọi tay qua `runCollector()`.
+ * Test import `./collector.ts` chứ KHÔNG import `./index.ts` — xem DECISIONS #32.
  */
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
@@ -160,7 +158,11 @@ Deno.test("rss-collector: retry, feed chết, cô lập lỗi, lọc theo checkp
     }) as typeof fetch;
 
     await t.step("chạy collector với mock", async () => {
-      const { runCollector } = await import("./index.ts");
+      // Import `./collector.ts` (KHÔNG phải `./index.ts`): collector.ts thuần logic,
+      // import không khởi động Deno.serve nên không chiếm cổng 8000.
+      // Xem DECISIONS #32 — nếu import index.ts, health-check của editor gọi vào
+      // 127.0.0.1:8000 sẽ kích hoạt thêm 1 lượt runCollector song song.
+      const { runCollector } = await import("./collector.ts");
       await runCollector();
     });
 

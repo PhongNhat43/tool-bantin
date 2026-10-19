@@ -99,3 +99,31 @@
   - Ghi chú kỹ thuật: import `./index.ts` trong test sẽ chạy nhánh `Deno.serve` (vì không có `--once`) nên Deno in "Listening on http://0.0.0.0:8000/" — vô hại, `deno test` vẫn thoát bình thường (đã thử riêng để chắc).
 - **TASKS.md**: Phong sẽ sửa trên bản hiện tại (đang có dấu `[x]`) thay vì copy từ bản cũ → không cần re-apply nữa (DECISIONS #31).
 - Commit: code test + docs trong cùng commit bàn giao này.
+
+## 2026-10-19 — Sửa test flaky của rss-collector (bug thật, không phải test hỏng vặt)
+
+**Triệu chứng:** chạy `deno test supabase/functions/` thì ~1/3 lần fail ở step "retry: đúng số lần gọi cho từng loại lỗi", luôn cùng dạng `mong đợi: 1 / nhận được: 2`. Chạy riêng file test thì luôn pass. Có lần còn thấy `TypeError: fetch failed` (tức có lúc **fetch thật** bị gọi cho `fake.test`).
+
+**Quá trình tìm (không đoán):**
+1. Loại giả thuyết "DB còn row `[TEST]` sót" → query DB: đúng 3 source thật, 0 row `[TEST]`.
+2. Loại giả thuyết "import `index.ts` tự chạy collector" → probe đếm số lần fetch `simonwillison.net` trước/sau import: **0** (import không tự chạy).
+3. Instrument tạm bằng `console.error` (không bị test runner nuốt output) → thấy rõ **2 lượt `runCollector` chạy ĐỒNG THỜI trong cùng 1 isolate**: mock chỉ cài 1 lần, test body chạy 1 lần, nhưng `network-error` và `ratelimited` bị gọi **8 lần** thay vì 4, `dead` 2 lần, và các lượt gọi xen kẽ nhau rõ rệt.
+4. Chỉ còn 1 chỗ gọi được `runCollector` lần nữa: handler `Deno.serve`. Chèn probe vào handler → **bắt tận tay**:
+   ```
+   GET http://127.0.0.1:8000/health
+   user-agent: opencode/latest/2.0.32/cli
+   ```
+
+**Nguyên nhân gốc:** `Deno.serve` bind `127.0.0.1:8000`. Test import `index.ts` → server mở → **health-check định kỳ của chính editor (opencode)** gọi `GET /health` → handler chạy thêm 1 lượt `runCollector()` song song với lượt của test → số lần gọi mạng nhân đôi → assert đếm sai. Mọi thứ khác (DB, mock, retry) đều đúng. Vì đây là race với health-check nên mới flaky.
+
+**Cách sửa:** tách logic ra `rss-collector/collector.ts` (thuần logic, import không gây tác dụng phụ), `index.ts` chỉ còn 30 dòng làm entrypoint. Test import `./collector.ts`.
+
+**Kiểm chứng sau khi sửa:**
+- `deno check` + `deno lint` sạch.
+- Entrypoint `deno run ... index.ts --once` vẫn chạy đúng như cũ.
+- Chạy `deno test supabase/functions/` **10 lần liên tiếp → 10/10 pass, 0 fail** (trước đó ~1/3 fail).
+- Không còn dấu vết probe trong repo; DB vẫn 3 source thật + 63 item.
+
+**Ghi lại:** DECISIONS #32 (cách sửa) và #33 (2 collector còn lại chưa tách — khi viết test cho chúng phải tách trước, nếu không sẽ dính đúng lỗi này).
+
+- Commit: fix flaky test theo sau commit docs này.
