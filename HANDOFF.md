@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 19/10/2026 (sau Task 1.5b — tách 2 collector còn lại theo pattern rss-collector)_
+_Cập nhật lần cuối: 19/10/2026 (sau Task 1.6 — ingest-facebook)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -13,23 +13,26 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.5b — tách 2 collector còn
   - [x] 1.4 hackernews-collector
   - [x] 1.5 rss-collector + `_shared/xml.ts` (parser tự viết — Deno không có DOMParser) — commit `e0510af`
   - [x] 1.5b tách `github-collector` + `hackernews-collector` thành `collector.ts` (logic) + `index.ts` (entrypoint) — đóng cảnh báo #33 — commit `da64117` + `241dd4f`
+  - [x] 1.6 ingest-facebook — endpoint POST nhận JSON từ Merlin (3 group FB đã seed; auth `x-ingest-secret`) — commit `dba3082` — **chờ Merlin bắn dữ liệu thật**
   - [ ] 1.3 reddit-collector — DỜI CUỐI Phase 1 (chờ quyết định phê duyệt API Reddit)
-  - [ ] 1.6 ingest-facebook — endpoint nhận JSON do Merlin bắn vào (spec riêng) — **TASK TIẾP THEO**
-- **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3. Chưa code.
+- **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3. Chưa code. **2.0 `run-cycle` là TASK TIẾP THEO** (1.6 xong, đang chờ dữ liệu FB thật).
 - **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ✅ Demo đã có trong repo: **`dashboard-demo.html`** (v2, 404 dòng, light + toggle dark) — Phase 3 phải đối chiếu file này, không tự đoán (TASKS.md 3.2).
 - **Phase 4 (mới, Phong thêm 19/10):** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Ý tưởng, làm sau Phase 1–3.
 
 ## Dữ liệu & repo hiện tại
-- DB: **64 items** (github 19 + hackernews 15 + rss 30), mọi `score = 0` (chấm điểm là việc Task 2.1). HN từ 14 → 15 vì khi chụp baseline 1.5b có xoá `last_seen` nên quét rộng 7 ngày, nhặt thêm 1 story thật.
-- `sources`: 3 row đều enabled — github, hackernews, rss/Simon Willison (`config.url = https://simonwillison.net/atom/everything/`)
+- DB: **64 items** (github 19 + hackernews 15 + rss 30), mọi `score = 0` (chấm điểm là việc Task 2.1). HN từ 14 → 15 vì khi chụp baseline 1.5b có xoá `last_seen` nên quét rộng 7 ngày, nhặt thêm 1 story thật. **Chưa có item Facebook** — 6 row test của 1.6 đã xoá sạch, chờ Merlin bắn dữ liệu thật.
+- `sources`: **6 row đều enabled** — github, hackernews, rss/Simon Willison (`config.url = https://simonwillison.net/atom/everything/`), và **3 group facebook** (`type='facebook'`, `config = { group_id, group_url }`): Vibe Code kiếm cơm `1385451906420187`, Antigravity VN `1522144709086429`, Cộng đồng Claude AI & AI Agents Việt Nam `861108920047086`.
+- **`ingest-facebook` = endpoint PUSH** (Merlin POST vào), KHÁC các collector khác: không có checkpoint, chống trùng bằng `UNIQUE(source_id, external_id)`, xác thực bằng header `x-ingest-secret` (env `INGEST_SECRET`). Logic ở `ingest.ts` (không phải `collector.ts`), entrypoint `index.ts`. Hợp đồng dữ liệu cho Merlin: `supabase/functions/ingest-facebook/README.md` (aliases + curl + mã lỗi). ⚠️ Phải tắt `verify_jwt` cho riêng function (`supabase/config.toml` đã khai) — nếu không Supabase chặn 401 trước khi code chạy.
 - **Test có trong repo** (từ 19/10, DECISIONS #30): `supabase/functions/_shared/xml_test.ts` + `supabase/functions/rss-collector/index_test.ts`. Chạy: `deno test --allow-net --allow-env --allow-read supabase/functions/` → 6 passed (**đã chạy 10 lần liên tiếp: 10/10 pass**). Test nhánh lỗi **ghi thật vào DB** (tạo rồi xoá 6 source `[TEST] ...`), cần `SUPABASE_SERVICE_ROLE_KEY`.
-- **Mọi collector tách 2 file** (DECISIONS #32 + #34): `<name>/collector.ts` = toàn bộ logic (import KHÔNG có tác dụng phụ, export `runCollector`), `<name>/index.ts` = entrypoint ~30 dòng (`--once` → chạy 1 lần, ngược lại → `Deno.serve`). Đã áp dụng cho **cả 3**: rss, github, hackernews. Test import `collector.ts`.
-- GitHub: `origin/main` = `2535038` (7 commit của 1.5 + fix flaky **đã được Phong push**); còn **3 commit local chưa push**: `da64117` + `241dd4f` (code 1.5b) và commit docs 1.5b (HEAD). Working tree sạch.
+- **Mọi collector tách 2 file** (DECISIONS #32 + #34): `<name>/collector.ts` = toàn bộ logic (import KHÔNG có tác dụng phụ, export `runCollector`), `<name>/index.ts` = entrypoint ~30 dòng (`--once` → chạy 1 lần, ngược lại → `Deno.serve`). Đã áp dụng cho **cả 3**: rss, github, hackernews. `ingest-facebook` cũng tách y vậy nhưng tên file logic là `ingest.ts` (nó là endpoint push, không phải collector fetch). Test import file logic, KHÔNG import `index.ts`.
+- GitHub: `origin/main` = `2535038` (7 commit của 1.5 + fix flaky **đã được Phong push**); còn **5 commit local chưa push**: `da64117` + `241dd4f` (code 1.5b), docs 1.5b, `dba3082` (code 1.6), và commit docs 1.6 (HEAD). Working tree sạch.
 
 ## Quyết định đang treo
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay tuần này, chờ 2–4 tuần) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1
 - **Anthropic news:** không có feed chính thức (DECISIONS #28). Muốn lấy tin Anthropic thì phải scrape HTML `/news` hoặc dùng nguồn thứ ba — Phong quyết khi nào cần.
-- **Push:** 3 commit local chưa push (`da64117`, `241dd4f`, + commit docs 1.5b) — agent không có credential nên phải nhờ Phong push tay.
+- **Push:** 5 commit local chưa push (`da64117`, `241dd4f`, docs 1.5b, `dba3082`, + commit docs 1.6) — agent không có credential nên phải nhờ Phong push tay.
+- **Deploy + secret cho 1.6:** Phong cần (a) tạo `INGEST_SECRET` trên Supabase (`supabase secrets set INGEST_SECRET=<64 hex>` hoặc dashboard → Edge Functions → Secrets) và (b) deploy `ingest-facebook` với **verify_jwt = false** (xem `supabase/config.toml`). Sau đó Merlin bắn dữ liệu thật. Secret local đã có sẵn trong `.env`; tạo mới bằng `openssl rand -hex 32`.
+- **Contract với Merlin:** payload field chưa có spec cố định — endpoint hiện chấp nhận alias rộng (xem `ingest-facebook/README.md`). Nếu Merlin gửi field lạ chưa map, gửi 1 mẫu JSON để bổ sung alias.
 
 ## Lưu ý cho model mới
 - Đọc DECISIONS.md trước khi đề xuất bất kỳ thay đổi thiết kế nào — không đề xuất lại thứ đã chốt
@@ -42,5 +45,6 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.5b — tách 2 collector còn
 - **Push GitHub:** repo **private**. Shell của agent **không có credential** nên không tự push được — phải nhờ Phong push tay.
 - ✅ **AGENTS.md đã có mục 7** (quy trình làm việc & bàn giao) — bắt buộc tuân thủ: 1 task = 1 commit, append WORKLOG/DECISIONS, cập nhật HANDOFF, push khi được yêu cầu.
 - ✅ **Thứ tự mục AGENTS.md đã đúng:** 1 → 7 liên tục (mục 7 đã chuyển xuống cuối, sau mục 6).
-- ⚠️ **TASKS.md đã từng bị ghi đè mất dấu `[x]` 2 lần** (19/10). Từ giờ Phong sửa TRÊN bản hiện tại, không copy từ bản cũ (DECISIONS #31) → model không phải re-apply nữa. Nếu vẫn thấy mất dấu thì re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b + ghi chú (1.3 DỜI, 1.6 TASK TIẾP THEO, 1.7 ĐỂ V2).
-- Phân vân thì xem `DECISIONS.md` #14–#34: #14–#18, #23–#28 là quyết định kỹ thuật collector; #20 gỡ vênh orchestrator; #21 chốt chi tiết scoring; #22 mục 7 có hiệu lực; #29 tổng kết Task 1.5; #30 test vào repo; #31 cách sửa TASKS.md; #32 tách `collector.ts` vì bẫy cổng 8000; #33 cảnh báo 2 collector còn lại; #34 đã tách nốt 2 collector đó (1.5b).
+- ⚠️ **TASKS.md đã từng bị ghi đè mất dấu `[x]` 2 lần** (19/10). Từ giờ Phong sửa TRÊN bản hiện tại, không copy từ bản cũ (DECISIONS #31) → model không phải re-apply nữa. Nếu vẫn thấy mất dấu thì re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6 + ghi chú (1.3 DỜI cuối Phase 1 + chờ API Reddit, 1.7 ĐỂ V2; **TASK TIẾP THEO = 2.0 run-cycle**).
+- Phân vân thì xem `DECISIONS.md` #14–#38: #14–#18, #23–#28 là quyết định kỹ thuật collector; #20 gỡ vênh orchestrator; #21 chốt chi tiết scoring; #22 mục 7 có hiệu lực; #29 tổng kết Task 1.5; #30 test vào repo; #31 cách sửa TASKS.md; #32 tách `collector.ts` vì bẫy cổng 8000; #33 cảnh báo 2 collector còn lại; #34 đã tách nốt 2 collector đó (1.5b); #35 ưu tiên 1.6 trước test github/HN; #36–#37 hợp đồng ingest-facebook (push, không checkpoint, alias rộng, auth secret, tắt verify_jwt); #38 bug `engagement` not-null khi bulk-upsert.
+- ⚠️ **Cột `items.engagement` là not-null** (`default '{}'`), nhưng PostgREST **bulk-upsert điền NULL cho row thiếu key** (KHÔNG dùng default). Với mọi collector upsert theo lô: field not-null phải **luôn có mặt trong mọi phần tử**. Đã dính đúng lỗi này ở 1.6 (DECISIONS #38).

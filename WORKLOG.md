@@ -150,3 +150,27 @@
 **Ghi chú DB:** khi xoá `last_seen` để chụp baseline, HN quét rộng về 7 ngày nên nhặt thêm **1 story thật** chưa có → DB từ 63 → **64 items** (github 19 + hackernews 15 + rss 30). Item này hợp lệ, không phải rác test.
 
 - Commit: `da64117` (github) + `241dd4f` (hackernews) — mỗi collector 1 commit riêng theo yêu cầu.
+
+## 2026-10-19 — Task 1.6: `ingest-facebook` (endpoint nhận JSON từ Merlin)
+
+**Bối cảnh:** Merlin quét 3 group Facebook bằng lịch riêng rồi POST vào backend (ARCHITECTURE.md). Repo **không có spec field-level** cho payload → endpoint được thiết kế **khoan dung** (nhận 3 dạng body + alias field rộng) để không vỡ khi Merlin bắn thật (DECISIONS #36/#37).
+
+**Đã làm:**
+- `supabase/functions/ingest-facebook/ingest.ts` = logic (import không side-effect): `IngestResult`, `checkSecret`, `ingestPosts`, `ingestFacebook`; `index.ts` = entrypoint (`Deno.serve` + cờ `--once <file.json>`) — theo pattern #32/#34.
+- Auth: header **`x-ingest-secret`** so timing-safe với env `INGEST_SECRET`; thiếu env → 500 (fail closed). **Tắt `verify_jwt`** cho riêng function qua `supabase/config.toml` (Merlin không có JWT Supabase).
+- `README.md` = **hợp đồng dữ liệu cho Merlin** (field + alias + curl mẫu + bảng mã lỗi + danh sách group đã seed); `sample-payload.json` để test local.
+- Seed 3 source `type=facebook`: Vibe Code kiếm cơm `1385451906420187`, Antigravity VN `1522144709086429`, Cộng đồng Claude AI & AI Agents Việt Nam `861108920047086` — `config = { group_id, group_url }`.
+- `.env.example` thêm `INGEST_SECRET=`; `.env` local đã có secret 64 hex (đã verify `.env` bị gitignore).
+
+**Test (show log):**
+1. `--once sample-payload.json` lần 1 → `nhận 3 | hợp lệ 3 | mới 3 | trùng 0 | bỏ 0`; lần 2 → `mới 0 | trùng 3`.
+2. Payload biên: group lạ → `unknown_groups:["9999999999"]` + bỏ bài; thiếu `post_id` → bỏ; `text` rỗng → bỏ; alias (`from:{name}`→author, `likes`→reactions, `num_comments`→comments, `timestamp` ms→ISO, `permalink` tương đối→ghép host, `group` khớp theo **tên**) đều OK; bọc `{items:[...]}` OK; 1 bài lẻ OK.
+3. HTTP thật (server nền cổng 8000): `GET /` → 200 health; POST thiếu secret → 401; sai secret → 401; `PUT` → 405; JSON hỏng → 400; POST đúng secret với 2 bài trùng `post_id` trong cùng request → `mới 1 | trùng 1`; POST lại → `mới 0 | trùng 1`.
+4. `deno check` + `deno lint` (14 file) sạch; `deno test supabase/functions/` → 6 passed.
+5. Xoá 6 row test → DB về đúng **64 items**.
+
+**Bug bắt được khi test HTTP (DECISIONS #38):** lô trộn bài có/không có tương tác → `null value in column "engagement"` — vì PostgREST bulk-upsert **điền NULL cho row thiếu key** (bỏ qua column default `'{}'`). Fix: luôn gửi `engagement` object (kể cả `{}`), không để `undefined`. Test `--once` với payload mẫu **không lộ** bug này — chỉ test HTTP lô trộn mới lộ.
+
+- Commit code: `dba3082` (kèm `supabase/config.toml` + `.env.example`).
+
+**Chờ:** Phong set `INGEST_SECRET` vào Supabase secrets rồi deploy function với `verify_jwt=false`, sau đó Merlin bắn dữ liệu thật.

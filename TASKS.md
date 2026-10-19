@@ -14,12 +14,12 @@
 - [x] 1.4 `hackernews-collector`: Algolia API, query "Claude Code"/"AI coding", points ≥ 30 (19/10, b63e13a)
 - [x] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news) (19/10, e0510af — kèm `_shared/xml.ts`; **Anthropic KHÔNG có feed chính thức, đã verify 15 URL + sitemap → chỉ seed Simon Willison**)
 - [x] 1.5b Tách `github-collector` + `hackernews-collector` thành `collector.ts` (logic, import không tác dụng phụ) + `index.ts` (entrypoint ~30 dòng) theo đúng pattern rss-collector — đóng cảnh báo #33 (19/10, da64117 github + 241dd4f hackernews)
-- [ ] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert — **← TASK TIẾP THEO**
+- [x] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert (19/10, dba3082 — auth header `x-ingest-secret` + tắt `verify_jwt`; 3 group đã seed; test `--once` + HTTP 200/400/401/405)
 - [ ] 1.7 `youtube-collector`: ĐỂ V2, không làm (không tính là task Phase 1)
   - Tiêu chí xong mỗi collector: chạy 1 lệnh, log rõ fetch/new/dedup, dữ liệu vào đúng bảng `items`
 
 ## Phase 2 — Lọc + Thông báo (final plan chốt 19/10/2026, chi tiết đầy đủ trong AGENTS.md mục 6)
-- [ ] 2.0 `run-cycle`: orchestrator — đọc `sources` enabled → gọi từng collector (try/catch riêng từng source) → scoring → notify; pg_cron mỗi 2h gọi run-cycle qua pg_net, auth bằng CRON_SECRET
+- [ ] 2.0 `run-cycle`: orchestrator — đọc `sources` enabled → gọi từng collector (try/catch riêng từng source) → scoring → notify; pg_cron mỗi 2h gọi run-cycle qua pg_net, auth bằng CRON_SECRET — **← TASK TIẾP THEO** (1.3 reddit vẫn chờ phê duyệt API; 1.6 xong, đang chờ Merlin bắn dữ liệu FB thật)
 - [ ] 2.1 `scoring.ts` trong `_shared/`: đúng công thức AGENTS.md mục 6; breakdown lưu vào engagement.score_breakdown, score lưu tổng
 - [ ] 2.2 `notify-telegram`: ≥70 gửi ngay 1 tin/item (preview bật); 40–69 gom 1 digest/kỳ dạng bullet (tắt preview); ghi notification_log chống gửi lặp; trigger báo ngay: nhóm A + bài <24h, cross-source ≥2/24h, breaking + engagement hot
 - [ ] 2.3 Bật extensions pg_cron + pg_net trong dashboard Supabase; job chạy mỗi 2h vào phút 0
