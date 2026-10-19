@@ -13,6 +13,7 @@
 - [ ] 1.3 `reddit-collector`: đọc `/r/<sub>/new.json` với sub = ClaudeAI, AI_Agents (lấy từ bảng `sources`) — **DỜI xuống cuối Phase 1** (chờ phê duyệt API Reddit 2–4 tuần, xem DECISIONS #10)
 - [x] 1.4 `hackernews-collector`: Algolia API, query "Claude Code"/"AI coding", points ≥ 30 (19/10, b63e13a)
 - [x] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news) (19/10, e0510af — kèm `_shared/xml.ts`; **Anthropic KHÔNG có feed chính thức, đã verify 15 URL + sitemap → chỉ seed Simon Willison**)
+- [x] 1.5b Tách `github-collector` + `hackernews-collector` thành `collector.ts` (logic, import không tác dụng phụ) + `index.ts` (entrypoint ~30 dòng) theo đúng pattern rss-collector — đóng cảnh báo #33 (19/10, da64117 github + 241dd4f hackernews)
 - [ ] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert — **← TASK TIẾP THEO**
 - [ ] 1.7 `youtube-collector`: ĐỂ V2, không làm (không tính là task Phase 1)
   - Tiêu chí xong mỗi collector: chạy 1 lệnh, log rõ fetch/new/dedup, dữ liệu vào đúng bảng `items`

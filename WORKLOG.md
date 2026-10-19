@@ -127,3 +127,26 @@
 **Ghi lại:** DECISIONS #32 (cách sửa) và #33 (2 collector còn lại chưa tách — khi viết test cho chúng phải tách trước, nếu không sẽ dính đúng lỗi này).
 
 - Commit: fix flaky test theo sau commit docs này.
+
+## 2026-10-19 — Task 1.5b: tách `github-collector` + `hackernews-collector` (đóng cảnh báo #33)
+
+**Mục đích:** mọi collector đều có `collector.ts` import không tác dụng phụ, để sau này viết test không dính bẫy health-check như rss-collector đã gặp (#32).
+
+**Việc đã làm (chỉ di chuyển code, KHÔNG đổi nghiệp vụ):**
+- `github-collector/collector.ts` = 9 dòng header + **toàn bộ logic** (nguyên bản `index.ts` dòng 5–285, byte-identical); `github-collector/index.ts` = 29 dòng entrypoint (`--once` → `runCollector()`, ngược lại → `Deno.serve`).
+- `hackernews-collector/collector.ts` = 9 dòng header + logic (nguyên bản dòng 5–271, byte-identical); `index.ts` = 29 dòng entrypoint.
+- `LOG` khai lại ở cả `collector.ts` và `index.ts` — giống hệt cách rss-collector đang làm.
+
+**Cách kiểm chứng "log khớp hành vi trước tách" (không chỉ chạy suông):**
+1. **Chụp baseline TRƯỚC khi tách:** xoá `last_seen` của từng source rồi `--once` → lượt chạy này đi hết đường fetch→normalize→upsert (không phải nhánh "0 mới"). Lưu log.
+2. Tách xong, xoá `last_seen` lần nữa, chạy lại → `diff` (bỏ mốc thời gian) → **khớp hoàn toàn** cả 2 collector.
+3. So phần logic với bản gốc trong git bằng `diff` → **byte-identical** (chỉ khác header comment, đã verify).
+4. Chạy `--once` bình thường (checkpoint nguyên): github `19/0/19`, HN `0/0/0` — đúng như cũ.
+5. `deno check` + `deno lint` (12 file) sạch; `deno test --allow-net --allow-env --allow-read supabase/functions/` → **6 passed**.
+
+**Log đối chiếu github:** `fetch: 19 repo | upsert mới: 0 | bỏ qua do trùng: 19` — trước và sau tách **giống hệt**.
+**Log đối chiếu hackernews:** `fetch: 19 story thô | 15 story duy nhất sau khi gộp query | upsert mới: 0 | bỏ qua do trùng: 15` — trước và sau tách **giống hệt**.
+
+**Ghi chú DB:** khi xoá `last_seen` để chụp baseline, HN quét rộng về 7 ngày nên nhặt thêm **1 story thật** chưa có → DB từ 63 → **64 items** (github 19 + hackernews 15 + rss 30). Item này hợp lệ, không phải rác test.
+
+- Commit: `da64117` (github) + `241dd4f` (hackernews) — mỗi collector 1 commit riêng theo yêu cầu.
