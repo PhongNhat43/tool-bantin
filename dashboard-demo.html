@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bản tin AI — Demo giao diện v2</title>
+<style>
+  :root {
+    --bg: #fafafa;
+    --bg-hover: #f0f0f0;
+    --text: #1a1a1a;
+    --text-2: #737373;
+    --border: #e5e5e5;
+    --score-high-bg: #dc2626; --score-high-text: #ffffff;
+    --score-mid-bg: #dbeafe;  --score-mid-text: #1d4ed8;
+    --score-low-bg: #e5e5e5;  --score-low-text: #737373;
+    --hot-bg: #fef2f2;
+    --link: #1d4ed8;
+    --tag-bg: #eeeeee; --tag-text: #525252;
+    --input-bg: #ffffff;
+    --header-bg: rgba(250, 250, 250, 0.95);
+  }
+  [data-theme="dark"] {
+    --bg: #121212;
+    --bg-hover: #1a1a1a;
+    --text: #e8e6e3;
+    --text-2: #8a8680;
+    --border: #2a2a2a;
+    --score-high-bg: #c44536; --score-high-text: #ffffff;
+    --score-mid-bg: #1e3a5f;  --score-mid-text: #7cb3f0;
+    --score-low-bg: #2a2a2a;  --score-low-text: #8a8680;
+    --hot-bg: #1a1515;
+    --link: #7cb3f0;
+    --tag-bg: #1e1e1e; --tag-text: #8a8680;
+    --input-bg: #1a1a1a;
+    --header-bg: rgba(18, 18, 18, 0.95);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: var(--bg); color: var(--text); line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+    transition: background 0.2s, color 0.2s;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; padding: 0 20px 80px; }
+
+  /* ===== Header (sticky) ===== */
+  header {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 0; border-bottom: 1px solid var(--border); margin-bottom: 8px;
+    position: sticky; top: 0; background: var(--header-bg); z-index: 10;
+    backdrop-filter: blur(6px);
+  }
+  header h1 { font-size: 19px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; }
+  nav { display: flex; gap: 2px; }
+  nav button {
+    border: none; background: none; font-size: 14px; padding: 7px 13px;
+    border-radius: 7px; cursor: pointer; color: var(--text-2); font-weight: 500;
+  }
+  nav button.active { background: var(--text); color: var(--bg); font-weight: 600; }
+  .spacer { flex: 1; }
+  .icon-btn {
+    border: 1px solid var(--border); background: var(--input-bg); color: var(--text);
+    border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; white-space: nowrap;
+  }
+  .icon-btn:hover { border-color: var(--text-2); }
+  .last-run { font-size: 11px; color: var(--text-2); text-align: right; margin-top: 3px; }
+
+  /* ===== Sections ===== */
+  .section-title {
+    font-size: 12px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.09em; color: var(--text-2);
+    margin: 36px 0 4px; display: flex; align-items: center; gap: 8px;
+  }
+  .section-title .count {
+    background: var(--score-low-bg); color: var(--score-low-text);
+    border-radius: 999px; font-size: 11px; padding: 1px 8px; font-weight: 700; letter-spacing: 0;
+  }
+  .section-title.hot { color: var(--score-high-bg); }
+  .section-title.hot .count { background: var(--score-high-bg); color: var(--score-high-text); }
+
+  /* ===== Feedly-style rows ===== */
+  .item {
+    display: flex; gap: 14px; align-items: flex-start;
+    padding: 13px 10px; border-bottom: 1px solid var(--border);
+    cursor: pointer; border-radius: 6px;
+  }
+  .item:hover { background: var(--bg-hover); }
+  .item.hot-row { background: var(--hot-bg); }
+  .item.hot-row:hover { background: var(--bg-hover); }
+  .score {
+    flex-shrink: 0; width: 46px; height: 46px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 700;
+  }
+  .score.high { background: var(--score-high-bg); color: var(--score-high-text); }
+  .score.mid  { background: var(--score-mid-bg);  color: var(--score-mid-text); }
+  .score.low  { background: var(--score-low-bg);  color: var(--score-low-text); }
+  .item .body { flex: 1; min-width: 0; }
+  .item h3 {
+    font-size: 15px; font-weight: 600; line-height: 1.4;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .meta {
+    font-size: 12.5px; color: var(--text-2); margin-top: 4px;
+    display: flex; gap: 7px; flex-wrap: wrap; align-items: center;
+  }
+  .tag {
+    font-size: 11.5px; background: var(--tag-bg); color: var(--tag-text);
+    border-radius: 999px; padding: 1px 9px; white-space: nowrap;
+  }
+  .detail { display: none; margin-top: 10px; }
+  .item.open .detail { display: block; }
+  .detail p.desc { font-size: 13.5px; color: var(--text-2); margin-bottom: 10px; }
+  .breakdown {
+    display: flex; gap: 14px; flex-wrap: wrap; font-size: 12.5px; color: var(--text-2);
+    margin-bottom: 10px;
+  }
+  .breakdown b { color: var(--text); }
+  .open-link { font-size: 13.5px; color: var(--link); text-decoration: none; font-weight: 600; }
+  .open-link:hover { text-decoration: underline; }
+
+  /* ===== Filters ===== */
+  .filters { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+  .filters input[type="text"], .filters select {
+    border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg);
+    color: var(--text); padding: 9px 12px; font-size: 13.5px;
+  }
+  .filters input[type="text"] { flex: 1; min-width: 180px; }
+  .filters input::placeholder { color: var(--text-2); }
+
+  /* ===== Sources page ===== */
+  .page { display: none; }
+  .page.active { display: block; }
+  .source-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 13px 10px; border-bottom: 1px solid var(--border); border-radius: 6px;
+  }
+  .source-row:hover { background: var(--bg-hover); }
+  .source-row .info { flex: 1; min-width: 0; }
+  .source-row .name { font-size: 14.5px; font-weight: 600; }
+  .source-row .sub { font-size: 12.5px; color: var(--text-2); margin-top: 2px; }
+  .badge {
+    font-size: 11.5px; font-weight: 600; border-radius: 6px; padding: 3px 9px;
+    background: var(--tag-bg); color: var(--tag-text); white-space: nowrap;
+  }
+  .toggle {
+    width: 42px; height: 23px; border-radius: 999px; border: none; cursor: pointer;
+    background: var(--score-high-bg); position: relative; flex-shrink: 0;
+  }
+  .toggle::after {
+    content: ""; position: absolute; top: 3px; right: 3px; width: 17px; height: 17px;
+    border-radius: 50%; background: #fff;
+  }
+  .toggle.off { background: var(--score-low-bg); }
+  .toggle.off::after { right: auto; left: 3px; }
+  .add-form { margin-top: 28px; padding-top: 20px; border-top: 1px solid var(--border); }
+  .add-form h3 { font-size: 14px; margin-bottom: 10px; }
+  .add-form .row { display: flex; gap: 8px; margin-bottom: 10px; flex-wrap: wrap; }
+  .add-form select, .add-form input {
+    border: 1px solid var(--border); border-radius: 8px; background: var(--input-bg);
+    color: var(--text); padding: 9px 12px; font-size: 13.5px;
+  }
+  .add-form input { flex: 1; min-width: 160px; }
+  .add-form input::placeholder { color: var(--text-2); }
+  .add-form button {
+    background: var(--text); color: var(--bg); border: none; border-radius: 8px;
+    padding: 9px 18px; font-size: 13.5px; font-weight: 600; cursor: pointer;
+  }
+
+  .demo-note {
+    margin-top: 44px; padding: 14px 18px; font-size: 12.5px; color: var(--text-2);
+    border: 1px solid var(--border); border-radius: 10px;
+  }
+  .demo-note b { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <h1>Bản tin AI</h1>
+    <nav>
+      <button id="tab-feed" class="active" onclick="showPage('feed')">Feed</button>
+      <button id="tab-sources" onclick="showPage('sources')">Nguồn</button>
+    </nav>
+    <div class="spacer"></div>
+    <button class="icon-btn" id="theme-btn" onclick="toggleTheme()" title="Chuyển Light / Dark mode">🌙 Dark</button>
+    <div>
+      <button class="icon-btn" onclick="alert('Demo: sẽ gọi run-cycle để quét ngay, khỏi chờ kỳ 2h.')">▶ Chạy ngay</button>
+      <div class="last-run">kỳ cuối: 14:00</div>
+    </div>
+  </header>
+
+  <!-- ============ FEED ============ -->
+  <div id="page-feed" class="page active">
+
+    <div class="section-title hot">Cần xem ngay <span class="count">2</span></div>
+
+    <div class="item hot-row" onclick="this.classList.toggle('open')">
+      <div class="score high">78</div>
+      <div class="body">
+        <h3>Tặng 100$ credit API Claude cho dev mới đăng ký — số lượng có hạn</h3>
+        <div class="meta"><span>Facebook · Vibe Code kiếm cơm</span><span>2 giờ trước</span><span class="tag">token free</span><span class="tag">giveaway</span></div>
+        <div class="detail">
+          <p class="desc">Bài đăng chia sẻ link đăng ký nhận credit, nhiều bình luận xác nhận đã nhận được. Link trỏ về trang chính thức của Anthropic.</p>
+          <div class="breakdown"><span>Chủ đề <b>40</b>/40</span><span>Tương tác <b>22</b>/30</span><span>Độ mới <b>16</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+          <div class="meta" style="margin-bottom:8px"><span>156 reactions · 43 bình luận</span></div>
+          <a class="open-link" href="#" onclick="event.stopPropagation()">Mở bài gốc ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item hot-row" onclick="this.classList.toggle('open')">
+      <div class="score high">70</div>
+      <div class="body">
+        <h3>Anthropic ra mắt Claude Opus 4.5: benchmark lập trình vượt GPT-5</h3>
+        <div class="meta"><span>RSS · Anthropic News</span><span>5 giờ trước</span><span class="tag">model mới</span><span class="tag">3 nguồn đưa tin</span></div>
+        <div class="detail">
+          <p class="desc">Thông báo chính thức từ Anthropic. Tin đã xuất hiện đồng thời trên Hacker News và 1 group Facebook trong 24h.</p>
+          <div class="breakdown"><span>Chủ đề <b>10</b>/40</span><span>Tương tác <b>30</b>/30</span><span>Độ mới <b>20</b>/20</span><span>Cross-source <b>10</b>/10</span></div>
+          <a class="open-link" href="#" onclick="event.stopPropagation()">Mở bài gốc ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Hôm nay <span class="count">3</span></div>
+
+    <div class="item" onclick="this.classList.toggle('open')">
+      <div class="score mid">58</div>
+      <div class="body">
+        <h3>Chia sẻ workflow viết prompt cho Claude Code hiệu quả gấp 3 lần — kèm file config mẫu</h3>
+        <div class="meta"><span>Facebook · Antigravity VN</span><span>4 giờ trước</span><span class="tag">workflow</span><span class="tag">prompt</span></div>
+        <div class="detail">
+          <p class="desc">Bài chia sẻ quy trình + file đính kèm trên Google Drive. 28 bình luận, nhiều người báo áp dụng được ngay.</p>
+          <div class="breakdown"><span>Chủ đề <b>30</b>/40</span><span>Tương tác <b>12</b>/30</span><span>Độ mới <b>16</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+          <div class="meta" style="margin-bottom:8px"><span>89 reactions · 28 bình luận</span></div>
+          <a class="open-link" href="#" onclick="event.stopPropagation()">Mở bài gốc ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" onclick="this.classList.toggle('open')">
+      <div class="score mid">50</div>
+      <div class="body">
+        <h3>Leonxlnx/earshot — Ears for coding agents: let AI hear, review and make sound. CPU-only, open source.</h3>
+        <div class="meta"><span>GitHub</span><span>4 ngày trước</span><span class="tag">open source</span><span class="tag">github</span></div>
+        <div class="detail">
+          <p class="desc">Repo AI coding agent mới: cho phép agent "nghe" và review âm thanh, chạy CPU-only. Dữ liệu thật từ collector Task 1.2.</p>
+          <div class="breakdown"><span>Chủ đề <b>20</b>/40</span><span>Tương tác <b>30</b>/30</span><span>Độ mới <b>0</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+          <div class="meta" style="margin-bottom:8px"><span>1006 stars · 56 forks</span></div>
+          <a class="open-link" href="#" onclick="event.stopPropagation()">Mở repo ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="item" onclick="this.classList.toggle('open')">
+      <div class="score mid">45</div>
+      <div class="body">
+        <h3>christos-antono/NPCTalk — Make any NPC in any game talk back with Fish Audio</h3>
+        <div class="meta"><span>GitHub</span><span>4 ngày trước</span><span class="tag">open source</span></div>
+        <div class="detail">
+          <p class="desc">Skills + self-hosted voice server + tools cho AI coding agents, kèm ví dụ GTA V đầy đủ. Dữ liệu thật từ collector Task 1.2.</p>
+          <div class="breakdown"><span>Chủ đề <b>20</b>/40</span><span>Tương tác <b>20</b>/30</span><span>Độ mới <b>5</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+          <div class="meta" style="margin-bottom:8px"><span>175 stars · 12 forks</span></div>
+          <a class="open-link" href="#" onclick="event.stopPropagation()">Mở repo ↗</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">Tất cả</div>
+    <div class="filters">
+      <input type="text" id="search" placeholder="Tìm kiếm tiêu đề..." oninput="filterItems()">
+      <select><option>Tất cả nguồn</option><option>Facebook</option><option>GitHub</option><option>Hacker News</option><option>Reddit</option><option>RSS</option></select>
+      <select><option>Mọi chủ đề</option><option>Token/API free</option><option>Workflow & bí quyết</option><option>Tool mới</option><option>Tin tức</option></select>
+    </div>
+    <div id="all-list">
+      <div class="item" onclick="this.classList.toggle('open')">
+        <div class="score low">32</div>
+        <div class="body">
+          <h3>UnderleveledBuilder/awesome-short-drama-skills — tuyển tập skill AI làm phim ngắn</h3>
+          <div class="meta"><span>GitHub</span><span>6 ngày trước</span><span class="tag">github</span></div>
+          <div class="detail">
+            <div class="breakdown"><span>Chủ đề <b>20</b>/40</span><span>Tương tác <b>7</b>/30</span><span>Độ mới <b>5</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+            <div class="meta" style="margin-bottom:8px"><span>82 stars · 7 forks</span></div>
+            <a class="open-link" href="#" onclick="event.stopPropagation()">Mở repo ↗</a>
+          </div>
+        </div>
+      </div>
+      <div class="item" onclick="this.classList.toggle('open')">
+        <div class="score low">28</div>
+        <div class="body">
+          <h3>Hướng dẫn setup MCP server cho Claude Code từ con số 0</h3>
+          <div class="meta"><span>Facebook · Cộng đồng Claude AI & AI Agents VN</span><span>1 ngày trước</span><span class="tag">hướng dẫn</span></div>
+          <div class="detail">
+            <div class="breakdown"><span>Chủ đề <b>30</b>/40</span><span>Tương tác <b>3</b>/30</span><span>Độ mới <b>10</b>/20</span><span>Cross-source <b>0</b>/10</span></div>
+            <div class="meta" style="margin-bottom:8px"><span>12 reactions · 4 bình luận</span></div>
+            <a class="open-link" href="#" onclick="event.stopPropagation()">Mở bài gốc ↗</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SOURCES ============ -->
+  <div id="page-sources" class="page">
+    <div class="section-title">Quản lý nguồn <span class="count">6</span></div>
+
+    <div class="source-row">
+      <div class="info"><div class="name">Vibe Code kiếm cơm</div><div class="sub">lần chạy cuối: 14:00 · 128 tin</div></div>
+      <span class="badge">Facebook</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+    <div class="source-row">
+      <div class="info"><div class="name">Antigravity VN</div><div class="sub">lần chạy cuối: 14:00 · 64 tin</div></div>
+      <span class="badge">Facebook</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+    <div class="source-row">
+      <div class="info"><div class="name">Cộng đồng Claude AI & AI Agents VN</div><div class="sub">lần chạy cuối: 14:00 · 91 tin</div></div>
+      <span class="badge">Facebook</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+    <div class="source-row">
+      <div class="info"><div class="name">GitHub AI coding</div><div class="sub">lần chạy cuối: 14:00 · 19 tin · query: "ai coding agent"</div></div>
+      <span class="badge">GitHub</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+    <div class="source-row">
+      <div class="info"><div class="name">Hacker News</div><div class="sub">lần chạy cuối: 14:00 · 23 tin</div></div>
+      <span class="badge">HN</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+    <div class="source-row">
+      <div class="info"><div class="name">Simon Willison's blog</div><div class="sub">lần chạy cuối: 14:00 · 11 tin</div></div>
+      <span class="badge">RSS</span><button class="toggle" onclick="this.classList.toggle('off')"></button>
+    </div>
+
+    <div class="add-form">
+      <h3>＋ Thêm nguồn mới</h3>
+      <div class="row">
+        <select id="new-type" onchange="updateFields()">
+          <option value="github">GitHub</option>
+          <option value="hackernews">Hacker News</option>
+          <option value="rss">RSS Blog</option>
+          <option value="reddit">Reddit</option>
+          <option value="facebook">Facebook Group</option>
+        </select>
+        <input type="text" placeholder="Tên nguồn (vd: GitHub MCP servers)">
+      </div>
+      <div class="row" id="type-fields">
+        <input type="text" placeholder='Query (vd: "mcp server")'>
+        <input type="text" placeholder="Min stars (vd: 50)" style="max-width:140px">
+      </div>
+      <button onclick="alert('Demo: sẽ lưu vào bảng sources, kỳ quét sau tự động đọc.')">Lưu nguồn</button>
+    </div>
+  </div>
+
+  <div class="demo-note">
+    <b>Demo v2 — Feedly style, dark mặc định.</b> Dữ liệu mẫu (3 repo GitHub là dữ liệu thật từ Task 1.2). Bấm nút ☀️/🌙 ở header để đổi theme. Hãy nhận xét: quét nhanh có dễ không? Ô score bên trái có đủ nổi bật không? Dark mode đọc có thoải mái không?
+  </div>
+
+</div>
+
+<script>
+  // Theme: dark mặc định, nhớ lựa chọn
+  const root = document.documentElement;
+  const themeBtn = document.getElementById('theme-btn');
+  function applyTheme(t) {
+    root.setAttribute('data-theme', t);
+    themeBtn.textContent = t === 'dark' ? '☀️ Light' : '🌙 Dark';
+    try { localStorage.setItem('bantin-theme', t); } catch (e) {}
+  }
+  function toggleTheme() {
+    applyTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+  }
+  try {
+    const saved = localStorage.getItem('bantin-theme');
+    if (saved) applyTheme(saved); else applyTheme('light');
+  } catch (e) { applyTheme('light'); }
+
+  function showPage(name) {
+    document.getElementById('page-feed').classList.toggle('active', name === 'feed');
+    document.getElementById('page-sources').classList.toggle('active', name === 'sources');
+    document.getElementById('tab-feed').classList.toggle('active', name === 'feed');
+    document.getElementById('tab-sources').classList.toggle('active', name === 'sources');
+    window.scrollTo(0, 0);
+  }
+  function filterItems() {
+    const q = document.getElementById('search').value.toLowerCase();
+    document.querySelectorAll('#all-list .item').forEach(el => {
+      const t = el.querySelector('h3').textContent.toLowerCase();
+      el.style.display = t.includes(q) ? '' : 'none';
+    });
+  }
+  const FIELDS = {
+    github: '<input type="text" placeholder=\'Query (vd: "mcp server")\'><input type="text" placeholder="Min stars (vd: 50)" style="max-width:140px">',
+    hackernews: '<input type="text" placeholder=\'Queries, cách nhau bởi dấu phẩy\'>',
+    rss: '<input type="text" placeholder="URL RSS (vd: https://simonwillison.net/atom/everything/)">',
+    reddit: '<input type="text" placeholder=\'Subreddits (vd: ClaudeAI, AI_Agents)\'>',
+    facebook: '<input type="text" placeholder="Group ID (Merlin sẽ ingest hộ)">'
+  };
+  function updateFields() {
+    document.getElementById('type-fields').innerHTML = FIELDS[document.getElementById('new-type').value];
+  }
+</script>
+</body>
+</html>

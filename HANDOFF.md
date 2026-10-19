@@ -15,17 +15,16 @@ _Cập nhật lần cuối: 19/10/2026 (sau khi AGENTS.md mục 7 — quy trình
   - [ ] 1.5 rss-collector — TASK TIẾP THEO
   - [ ] 1.6 ingest-facebook — endpoint nhận JSON do Merlin bắn vào (spec riêng)
 - **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3. Chưa code.
-- **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ⚠️ `dashboard-demo.html` được tham chiếu ở AGENTS.md §5, TASKS.md Phase 3 và HANDOFF nhưng **CHƯA có file này trong repo** — model mới không có demo để đối chiếu.
+- **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ✅ Demo đã có trong repo: **`dashboard-demo.html`** (v2, 404 dòng, light + toggle dark) — Phase 3 phải đối chiếu file này, không tự đoán (TASKS.md 3.2).
 
 ## Dữ liệu & repo hiện tại
 - DB: 33 items (github 19 + hackernews 14), cột score = 0 (chưa chấm — việc của Task 2.1)
-- GitHub: `origin/main` = `b63e13a`; có **1 commit local chưa push** (`ef2b0a5` docs). Working tree đang có thay đổi docs chưa commit.
+- GitHub: `origin/main` = `b63e13a`; có **2 commit local chưa push** (`ef2b0a5`, `f473758` docs). Working tree: đang có fix thứ tự AGENTS.md + `dashboard-demo.html` chưa commit.
 
 ## Quyết định đang treo
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay tuần này, chờ 2–4 tuần) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1
-- **Thứ tự mục AGENTS.md:** mục 7 đang nằm trước mục 6 → có chuyển mục 7 xuống cuối để đọc đúng 1→7 không?
-- **dashboard-demo.html:** bổ sung file demo vào repo, hay bỏ các tham chiếu tới nó trong AGENTS.md/TASKS.md?
-- **Push:** có **2 commit local chưa push** (`ef2b0a5`, `c473474`) — agent không có credential nên phải nhờ Phong push tay.
+- **dashboard-demo.html:** Phong sẽ bổ sung file demo vào repo (giữ nguyên tham chiếu trong AGENTS.md/TASKS.md, không gỡ). Phase 3 chưa bắt đầu nên chưa gấp.
+- **Push:** có **2 commit local chưa push** (`ef2b0a5`, `f473758`) + commit fix kế tiếp — agent không có credential nên phải nhờ Phong push tay.
 
 ## Lưu ý cho model mới
 - Đọc DECISIONS.md trước khi đề xuất bất kỳ thay đổi thiết kế nào — không đề xuất lại thứ đã chốt
@@ -35,5 +34,5 @@ _Cập nhật lần cuối: 19/10/2026 (sau khi AGENTS.md mục 7 — quy trình
   `deno run --allow-net --allow-env --allow-read index.ts --once` (thêm `--once`, nếu không nó sẽ chạy `Deno.serve` và treo).
 - **Push GitHub:** repo **private**. Shell của agent **không có credential** nên không tự push được — phải nhờ Phong push tay.
 - ✅ **AGENTS.md đã có mục 7** (quy trình làm việc & bàn giao) — bắt buộc tuân thủ: 1 task = 1 commit, append WORKLOG/DECISIONS, cập nhật HANDOFF, push khi được yêu cầu.
-- ⚠️ **Thứ tự mục trong AGENTS.md đang sai:** mục 7 nằm TRƯỚC mục 6 (dòng 33 vs 46) → đọc thành 1,2,3,4,5,7,6. Đang chờ Phong quyết có sửa không.
+- ✅ **Thứ tự mục AGENTS.md đã đúng:** 1 → 7 liên tục (mục 7 đã chuyển xuống cuối, sau mục 6).
 - Phân vân thì xem `DECISIONS.md` #14–#22: #14–#18 là quyết định kỹ thuật Phase 1, #20 gỡ vênh orchestrator, #21 chốt chi tiết scoring, #22 mục 7 có hiệu lực.

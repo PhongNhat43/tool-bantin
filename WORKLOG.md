@@ -45,3 +45,10 @@
   2. `dashboard-demo.html` được tham chiếu ở AGENTS.md §5, TASKS.md Phase 3, HANDOFF.md nhưng **không có file trong repo**.
 - Kết quả test: không có code mới; verify bằng `find`/`grep`/`md5`/`git diff` (log ở phần bàn giao).
 - Commit: `docs: ban hành AGENTS.md mục 7 + đồng bộ docs` (chính là commit chứa mục WORKLOG này).
+
+## 2026-10-19 — Xử lý 2 blind spot của mục 7 (Phong duyệt)
+- **Blind spot #1 — thứ tự mục AGENTS.md (đã sửa):** mục 7 nằm TRƯỚC mục 6 → chuyển **nguyên khối** mục 7 xuống cuối, không đổi một chữ nào. Verify: 58 dòng trước = 58 dòng sau, `diff <(sort trước) <(sort sau)` rỗng → thuần đổi thứ tự. Thứ tự nay: 1→7 liên tục.
+- **Blind spot #2 — `dashboard-demo.html` (đã có):** Phong tự bổ sung file vào repo (404 dòng, 20 KB, `data-theme="light"` + toggle dark). Đã kiểm tra **không chứa secret** (không có `eyJ…`, `supabase.co`, `service_role`, token). Giữ nguyên các tham chiếu trong AGENTS.md §5 / TASKS.md Phase 3.
+- Cập nhật HANDOFF: gỡ cảnh báo thứ tự mục, đánh dấu demo đã có, cập nhật trạng thái push.
+- Kết quả test: không có code mới; verify bằng `grep -n "^## "`, `diff sort`, `grep` quét secret trên file demo.
+- Commit: `docs: sửa thứ tự AGENTS.md (mục 7 xuống cuối) + thêm dashboard-demo.html`.
