@@ -1,20 +1,20 @@
 # Checklist thực hiện — làm theo đúng thứ tự, từng task một
 
 ## Phase 0 — Setup (làm đầu tiên)
-- [ ] 0.1 Tạo project Supabase mới, lấy SUPABASE_URL + ANON_KEY + SERVICE_ROLE_KEY, cho vào `.env` (không commit)
-- [ ] 0.2 Chạy `supabase/migrations/schema.sql` trong SQL Editor, verify 3 bảng được tạo
-- [ ] 0.3 Khởi tạo git repo, viết `.gitignore` (có `.env*`), commit đầu tiên, push lên GitHub
-- [ ] 0.4 Tạo Telegram bot via @BotFather, lấy token, lưu vào Supabase secrets
+- [x] 0.1 Tạo project Supabase mới, lấy SUPABASE_URL + ANON_KEY + SERVICE_ROLE_KEY, cho vào `.env` (không commit) — **19/10/2026**, làm trực tiếp trên dashboard
+- [x] 0.2 Chạy `supabase/migrations/schema.sql` trong SQL Editor, verify 3 bảng được tạo — **19/10/2026**, verify: `sources` / `items` / `notification_log` đều tồn tại
+- [x] 0.3 Khởi tạo git repo, viết `.gitignore` (có `.env*`), commit đầu tiên, push lên GitHub — **19/10/2026**, commit `74a018b` (repo private: `PhongNhat43/tool-bantin`)
+- [x] 0.4 Tạo Telegram bot via @BotFather, lấy token, lưu vào Supabase secrets — **19/10/2026**, làm trực tiếp
   - Tiêu chí xong: repo GitHub sạch, không lộ secret, DB có 3 bảng trống
 
 ## Phase 1 — Collectors (mỗi cái xong phải chạy thử + show log)
-- [ ] 1.1 `_shared/`: types.ts (ItemInput chung), normalize.ts, keywords.ts (bộ từ khóa T1 theo AGENTS.md mục 6) — xong trước, các collector dùng chung
-- [ ] 1.2 `github-collector`: search repos AI coding agents/MCP/automation, tạo ≤ 14 ngày, stars > 50, có README + commit gần đây, checkpoint `last_seen`
-- [ ] 1.3 `reddit-collector`: đọc `/r/<sub>/new.json` với sub = ClaudeAI, AI_Agents (lấy từ bảng `sources`)
-- [ ] 1.4 `hackernews-collector`: Algolia API, query "Claude Code"/"AI coding", points ≥ 30
-- [ ] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news)
+- [x] 1.1 `_shared/`: types.ts (ItemInput chung), normalize.ts, keywords.ts (bộ từ khóa T1 theo AGENTS.md mục 6) — xong trước, các collector dùng chung — **19/10/2026**, commit `6253a0c` (+ patch 1.1b: `NEGATIVE_EXCEPTIONS`)
+- [x] 1.2 `github-collector`: search repos AI coding agents/MCP/automation, tạo ≤ 14 ngày, stars > 50, có README + commit gần đây, checkpoint `last_seen` — **19/10/2026**, commit `6253a0c` (+ patch 1.2b: GITHUB_TOKEN, move schema.sql)
+- [ ] 1.3 `reddit-collector`: đọc `/r/<sub>/new.json` với sub = ClaudeAI, AI_Agents (lấy từ bảng `sources`) — **DỜI xuống cuối Phase 1** (chờ phê duyệt API Reddit 2–4 tuần, xem DECISIONS #10)
+- [x] 1.4 `hackernews-collector`: Algolia API, query "Claude Code"/"AI coding", points ≥ 30 — **19/10/2026**, commit `b63e13a`
+- [ ] 1.5 `rss-collector`: generic, đọc RSS từ URL trong `sources.config` (Simon Willison, Anthropic news) — **← TASK TIẾP THEO**
 - [ ] 1.6 `ingest-facebook`: endpoint POST nhận JSON từ Merlin (3 groups: Vibe Code kiếm cơm, Antigravity VN, Claude AI & AI Agents VN) → normalize → upsert
-- [ ] 1.7 `youtube-collector`: ĐỂ V2, không làm
+- [ ] 1.7 `youtube-collector`: ĐỂ V2, không làm ở Phase 1
   - Tiêu chí xong mỗi collector: chạy 1 lệnh, log rõ fetch/new/dedup, dữ liệu vào đúng bảng `items`
 
 ## Phase 2 — Lọc + Thông báo
