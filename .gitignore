@@ -1,0 +1,19 @@
+# Secrets — không bao giờ commit
+.env
+.env.*
+!.env.example
+
+# Dependencies
+node_modules/
+
+# macOS
+.DS_Store
+
+# Build output
+.next/
+dist/
+build/
+
+# Logs
+*.log
+npm-debug.log*
