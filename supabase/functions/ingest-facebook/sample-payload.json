@@ -1,0 +1,31 @@
+{
+  "posts": [
+    {
+      "group_id": "1385451906420187",
+      "post_id": "test-0001",
+      "text": "Tặng 50 credit Claude Code cho anh em, nhận ở comment nhé\nAi cần thì inbox mình",
+      "permalink": "https://www.facebook.com/groups/1385451906420187/posts/test-0001",
+      "author": "Nguyen Van A",
+      "created_at": "2026-10-19T09:30:00+07:00",
+      "reactions": 42,
+      "comments": 12,
+      "shares": 3
+    },
+    {
+      "group_id": "1522144709086429",
+      "post_id": "test-0002",
+      "message": "Workflow dùng Antigravity để code nhanh gấp đôi — mình chia sẻ quy trình setup chi tiết",
+      "created_time": 1792383000,
+      "reacts": 121,
+      "comment_count": 34
+    },
+    {
+      "group_id": "861108920047086",
+      "post_id": "test-0003",
+      "text": "Claude Code vừa ra bản mới, có subagent chạy song song",
+      "url": "https://www.facebook.com/groups/861108920047086/posts/test-0003",
+      "reactions": 88,
+      "comments": 21
+    }
+  ]
+}
