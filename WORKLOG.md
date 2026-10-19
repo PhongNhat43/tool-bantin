@@ -174,3 +174,41 @@
 - Commit code: `dba3082` (kèm `supabase/config.toml` + `.env.example`).
 
 **Chờ:** Phong set `INGEST_SECRET` vào Supabase secrets rồi deploy function với `verify_jwt=false`, sau đó Merlin bắn dữ liệu thật.
+
+## 2026-10-19 — Task 2.1: `_shared/scoring.ts` (chấm điểm + cổng T2 + luật báo ngay)
+
+**Mục đích:** biến tiêu chí 3 tầng (AGENTS.md mục 6) thành lib thuần túy để `run-cycle` (2.0) và `notify-telegram` (2.2) dùng. Không import Supabase, không đọc/ghi DB, không gọi mạng → test offline, tất định.
+
+**Đã làm — `supabase/functions/_shared/scoring.ts`:**
+- Export `ScoreInput`, `ScoreResult`, `ScoreBreakdown`, `EngagementMetrics`, `SourceType`, `MAX_SCORE`, `scoreItem(input, now = new Date())`.
+- **Cổng T2 chạy trước:** FB reactions+comments < 15; Reddit upvotes < 30 hoặc ratio < 0.75; HN points < 30 → `passed=false`, `score=0`, breakdown toàn 0, không chấm tiếp, `notify_now=false`. GitHub/RSS luôn qua (collector đã lọc).
+- **Topic 0–40:** `matchKeywords(title + ' ' + content).score`, dùng thẳng (không tự chế lại).
+- **Engagement 0–30:** nội suy tuyến tính pass→5, hot→30 (FB 15/80, Reddit 30/200, GitHub 50/500, HN 30/100); kẹp 5..30; RSS cố định 15. Metric FB = reactions+comments.
+- **Recency 0–20:** <6h→20, <12h→15, <24h→10, <48h→5, còn lại 0; ngày tương lai → 0h; ngày không parse được → 0.
+- **Cross-source 0–10:** chỉ nhận cờ `cross_source` (việc truy DB là của run-cycle).
+- **`notify_now`:** (a) nhóm A + <24h; (b) cross_source=true; (c) nhóm A + ngưỡng hot của nguồn (FB≥80, Reddit≥200, GitHub≥500, HN≥100). Nhóm A xác định bằng `matchKeywords(...).group === "A"` (đọc `KEYWORDS`), không chỉ xét điểm. Reason gộp bằng `"; "`.
+- Làm tròn từng thành phần → `score` đúng bằng tổng breakdown, khớp cột `items.score` integer (DECISIONS #39).
+
+**Test — `_shared/scoring_test.ts` (11 test, offline, không cần env):**
+1. nhóm A + FB hot 80, 2h → score 90, `notify_now=true`, reason có "nhóm A" + "hot".
+2. `"bán tool giá rẻ inbox"` → topic 0; thêm ca `"tool mới giá rẻ inbox"` (C 20 − 30 → 0).
+3. FB 10 react (7+3) → `passed=false`, `score=0`, breakdown 0, không báo dù nhóm A + cross_source.
+4. recency đúng biên 5.9/6/11.9/12/23.9/24/47.9/48/49h + tương lai.
+5. RSS → engagement đúng 15, bỏ qua stars/points thô.
+6. cross_source=true → +10 đúng, có reason cross-source.
+7. Hồi quy 1.1b: `"Đánh giá tool mới"`→20, `"Không bán token free"`→40; `"…, giá siêu rẻ"`→0; `"…, inbox"`→10.
+8. Biên cổng T2 cả 5 nguồn (FB 14/15, Reddit ratio 0.74/0.75, HN 29/30, GitHub/RSS 0 tương tác vẫn qua).
+9. Nội suy: pass→5, giữa→18, hot→30, vượt hot kẹp 30; GitHub <50 kẹp 5.
+10. Notify đủ luật a/b/c + các ca không báo (A nhưng 30h & không hot, RSS >24h, không nhóm A dù hot, tin bị loại).
+11. Bất biến: score = tổng breakdown, 0..100, JSON round-trip; ca max A+hot+<6h+cross = 100.
+
+**Log chạy:**
+```
+deno check supabase/functions/ → Checked 16 files (sạch)
+deno lint  supabase/functions/ → Checked 16 files (sạch)
+deno test supabase/functions/_shared/scoring_test.ts → 11 passed | 0 failed
+deno test --env-file=.env --allow-net --allow-env --allow-read supabase/functions/
+  → 17 passed (6 steps) | 0 failed   [11 scoring + 5 xml + 1 rss/6 step]
+```
+
+- Commit code: `79485ce` (chỉ 2 file mới: `scoring.ts` + `scoring_test.ts`; không đụng `config.toml` đang thay đổi ngoài task).

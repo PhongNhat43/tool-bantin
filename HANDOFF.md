@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 19/10/2026 (sau Task 1.6 — ingest-facebook)_
+_Cập nhật lần cuối: 19/10/2026 (sau Task 2.1 — scoring.ts)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -15,7 +15,10 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.6 — ingest-facebook)_
   - [x] 1.5b tách `github-collector` + `hackernews-collector` thành `collector.ts` (logic) + `index.ts` (entrypoint) — đóng cảnh báo #33 — commit `da64117` + `241dd4f`
   - [x] 1.6 ingest-facebook — endpoint POST nhận JSON từ Merlin (3 group FB đã seed; auth `x-ingest-secret`) — commit `dba3082` — **chờ Merlin bắn dữ liệu thật**
   - [ ] 1.3 reddit-collector — DỜI CUỐI Phase 1 (chờ quyết định phê duyệt API Reddit)
-- **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3. Chưa code. **2.0 `run-cycle` là TASK TIẾP THEO** (1.6 xong, đang chờ dữ liệu FB thật).
+- **Phase 2:** final plan đã chốt 19/10 — chi tiết scoring đầy đủ + orchestrator `run-cycle` nằm ở **AGENTS.md mục 6** (phần "Chi tiết scoring"); việc chia nhỏ ở TASKS.md 2.0–2.3.
+  - [x] 2.1 `_shared/scoring.ts` — lib thuần túy (không DB/mạng): cổng T2, topic 0–40, engagement nội suy 0–30, recency 6/12/24/48h 0–20, cross-source 0–10, 3 luật `notify_now` a/b/c + `notify_reason`. Commit `79485ce`; **11 test offline** trong `_shared/scoring_test.ts`.
+  - [ ] 2.0 `run-cycle` — **TASK TIẾP THEO** (1.6 xong, đang chờ dữ liệu FB thật). Khi làm: import `scoreItem` từ `_shared/scoring.ts`, tự truy DB tìm tin trùng 24h rồi truyền `cross_source`, ghi `score` + `breakdown` vào `engagement.score_breakdown`.
+  - [ ] 2.2 `notify-telegram`, [ ] 2.3 pg_cron + pg_net.
 - **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ✅ Demo đã có trong repo: **`dashboard-demo.html`** (v2, 404 dòng, light + toggle dark) — Phase 3 phải đối chiếu file này, không tự đoán (TASKS.md 3.2).
 - **Phase 4 (mới, Phong thêm 19/10):** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Ý tưởng, làm sau Phase 1–3.
 
@@ -23,7 +26,7 @@ _Cập nhật lần cuối: 19/10/2026 (sau Task 1.6 — ingest-facebook)_
 - DB: **64 items** (github 19 + hackernews 15 + rss 30), mọi `score = 0` (chấm điểm là việc Task 2.1). HN từ 14 → 15 vì khi chụp baseline 1.5b có xoá `last_seen` nên quét rộng 7 ngày, nhặt thêm 1 story thật. **Chưa có item Facebook** — 6 row test của 1.6 đã xoá sạch, chờ Merlin bắn dữ liệu thật.
 - `sources`: **6 row đều enabled** — github, hackernews, rss/Simon Willison (`config.url = https://simonwillison.net/atom/everything/`), và **3 group facebook** (`type='facebook'`, `config = { group_id, group_url }`): Vibe Code kiếm cơm `1385451906420187`, Antigravity VN `1522144709086429`, Cộng đồng Claude AI & AI Agents Việt Nam `861108920047086`.
 - **`ingest-facebook` = endpoint PUSH** (Merlin POST vào), KHÁC các collector khác: không có checkpoint, chống trùng bằng `UNIQUE(source_id, external_id)`, xác thực bằng header `x-ingest-secret` (env `INGEST_SECRET`). Logic ở `ingest.ts` (không phải `collector.ts`), entrypoint `index.ts`. Hợp đồng dữ liệu cho Merlin: `supabase/functions/ingest-facebook/README.md` (aliases + curl + mã lỗi). ⚠️ Phải tắt `verify_jwt` cho riêng function (`supabase/config.toml` đã khai) — nếu không Supabase chặn 401 trước khi code chạy.
-- **Test có trong repo** (từ 19/10, DECISIONS #30): `supabase/functions/_shared/xml_test.ts` + `supabase/functions/rss-collector/index_test.ts`. Chạy: `deno test --allow-net --allow-env --allow-read supabase/functions/` → 6 passed (**đã chạy 10 lần liên tiếp: 10/10 pass**). Test nhánh lỗi **ghi thật vào DB** (tạo rồi xoá 6 source `[TEST] ...`), cần `SUPABASE_SERVICE_ROLE_KEY`.
+- **Test có trong repo** (từ 19/10, DECISIONS #30): `_shared/xml_test.ts` + `_shared/scoring_test.ts` (11 test offline, không cần env/DB) + `rss-collector/index_test.ts`. Chạy: `deno test --allow-net --allow-env --allow-read supabase/functions/` → **17 passed (6 steps)**, 0 failed (**đã chạy 10 lần liên tiếp cho riêng suite cũ: 10/10 pass**). Test nhánh lỗi **ghi thật vào DB** (tạo rồi xoá 6 source `[TEST] ...`), cần `SUPABASE_SERVICE_ROLE_KEY`; chạy kèm `--env-file=.env`.
 - **Mọi collector tách 2 file** (DECISIONS #32 + #34): `<name>/collector.ts` = toàn bộ logic (import KHÔNG có tác dụng phụ, export `runCollector`), `<name>/index.ts` = entrypoint ~30 dòng (`--once` → chạy 1 lần, ngược lại → `Deno.serve`). Đã áp dụng cho **cả 3**: rss, github, hackernews. `ingest-facebook` cũng tách y vậy nhưng tên file logic là `ingest.ts` (nó là endpoint push, không phải collector fetch). Test import file logic, KHÔNG import `index.ts`.
 - GitHub: `origin/main` = `2535038` (7 commit của 1.5 + fix flaky **đã được Phong push**); còn **5 commit local chưa push**: `da64117` + `241dd4f` (code 1.5b), docs 1.5b, `dba3082` (code 1.6), và commit docs 1.6 (HEAD). Working tree sạch.
 
