@@ -436,6 +436,233 @@ button {
   cursor: progress;
 }
 
+/* ===== Sources page (task 3.3) ===== */
+.source-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 13px 10px;
+  border-bottom: 1px solid var(--border);
+  border-radius: 6px;
+}
+
+.source-row:hover {
+  background: var(--bg-hover);
+}
+
+.source-row .info {
+  flex: 1;
+  min-width: 0;
+}
+
+.source-row .name {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.source-row.off .name {
+  color: var(--text-2);
+}
+
+.source-row .sub {
+  font-size: 12.5px;
+  color: var(--text-2);
+  margin-top: 2px;
+}
+
+.config {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 14px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.config-item {
+  overflow-wrap: anywhere;
+}
+
+.source-note {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: var(--text-2);
+}
+
+.source-error {
+  margin: 6px 0 0;
+  font-size: 12.5px;
+  color: var(--danger);
+}
+
+.badge {
+  font-size: 11.5px;
+  font-weight: 600;
+  border-radius: 6px;
+  padding: 3px 9px;
+  background: var(--tag-bg);
+  color: var(--tag-text);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.toggle-box {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.toggle {
+  width: 42px;
+  height: 23px;
+  border-radius: 999px;
+  border: none;
+  padding: 0;
+  background: var(--score-high-bg);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.toggle::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 17px;
+  height: 17px;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.toggle.off {
+  background: var(--score-low-bg);
+}
+
+.toggle.off::after {
+  right: auto;
+  left: 3px;
+}
+
+.toggle:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 2px;
+}
+
+.toggle-state {
+  font-size: 11px;
+  color: var(--text-2);
+  white-space: nowrap;
+}
+
+.source-passive {
+  font-size: 11.5px;
+  color: var(--text-2);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.add-form {
+  margin-top: 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+
+.add-form h3 {
+  font-size: 14px;
+  margin: 0 0 10px;
+}
+
+.form-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+  min-width: 160px;
+}
+
+.field > span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-2);
+}
+
+.field input,
+.field select {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--input-bg);
+  color: var(--text);
+  padding: 9px 12px;
+  font-size: 13.5px;
+  width: 100%;
+}
+
+.field input::placeholder {
+  color: var(--text-2);
+}
+
+.field input:focus-visible,
+.field select:focus-visible {
+  outline: 2px solid var(--link);
+  outline-offset: 1px;
+}
+
+.field-narrow {
+  flex: 0 1 150px;
+  min-width: 120px;
+}
+
+.field-hint {
+  margin: 0 0 10px;
+  font-size: 12px;
+  color: var(--text-2);
+  overflow-wrap: anywhere;
+}
+
+.form-note {
+  margin: 0 0 10px;
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.add-form .error,
+.add-form .notice {
+  margin: 0 0 10px;
+}
+
+.form-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+.btn-primary {
+  background: var(--text);
+  border-color: var(--text);
+  color: var(--bg);
+}
+
+.btn-primary:hover:not(:disabled) {
+  border-color: var(--text);
+  opacity: 0.88;
+}
+
 /* ===== Auth / login ===== */
 .auth {
   max-width: 380px;
@@ -522,5 +749,19 @@ button {
 
   .wrap {
     padding: 0 16px 64px;
+  }
+
+  .source-row {
+    flex-wrap: wrap;
+    gap: 8px 10px;
+  }
+
+  .source-row .info {
+    flex-basis: 100%;
+  }
+
+  .toggle-box,
+  .source-passive {
+    margin-left: auto;
   }
 }
