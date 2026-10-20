@@ -11,7 +11,6 @@ import { createClient } from "@/lib/supabase/client";
 export function RequireAuth({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [ready, setReady] = useState(false);
-
   useEffect(() => {
     const supabase = createClient();
     let active = true;
@@ -43,7 +42,13 @@ export function RequireAuth({ children }: { children: ReactNode }) {
     };
   }, [router]);
 
-  if (!ready) return <p className="muted">Đang kiểm tra đăng nhập…</p>;
+  if (!ready) {
+    return (
+      <main className="wrap">
+        <p className="state">Đang kiểm tra đăng nhập…</p>
+      </main>
+    );
+  }
 
   return <>{children}</>;
 }
