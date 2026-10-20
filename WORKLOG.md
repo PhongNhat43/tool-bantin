@@ -663,3 +663,9 @@ NEXT_PUBLIC_BASE_PATH=/tool-bantin npm run build
   public (repo không chứa secret, `.env*` đã ignore) hoặc nâng gói. Không tự đổi visibility.
 - Trang Pages là file tĩnh công khai, nhưng dữ liệu vẫn do Supabase Auth + RLS chặn:
   chưa đăng nhập chỉ thấy shell + `/login`.
+
+**Bổ sung cùng ngày — thứ tự deploy:** không cần push trước khi tạo secrets / bật Pages / thêm redirect
+(cấu hình không nằm trong code), nhưng workflow chỉ lên GitHub **sau khi push** và chỉ chạy ở `main`.
+Thứ tự sạch nhất: **secrets → Pages source → Supabase redirect → push `main` → workflow tự chạy**
+(push có đổi `dashboard/**` nên trigger khớp). Nếu đã push trước: làm 3 thiết lập rồi **Re-run all jobs**.
+Chi tiết ở HANDOFF mục “3.4 — Phong cần làm”.

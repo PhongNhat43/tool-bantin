@@ -27,7 +27,7 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 một phần — workflow d
   - [x] 3.1b **Chuyển dashboard sang static export cho GitHub Pages** (thay Vercel): `output: "export"` + `trailingSlash` + `basePath=/tool-bantin`; `RequireAuth` (client) chặn route private; `/login` + `/auth/callback` client (PKCE, fallback hash token); trang chủ fetch client; bỏ `@supabase/ssr`. Build ra `out/`, đã test serve tĩnh + login + logout. Commit `d0b5ab0`. Xem DECISIONS #48/#49.
   - [x] 3.2 Trang Feed đúng demo, client-side: 3 khối (Cần xem ngay ≥70 max 20 / Hôm nay 40–69 trong 24h max 30 / Tất cả + search title+content + lọc nguồn + Tải thêm 50), dòng Feedly (ô điểm vuông + tiêu đề/meta, expand: nội dung 500 ký tự + breakdown 4 thành phần + engagement gốc + link gốc), theme light mặc định + toggle dark (localStorage, không nháy), header sticky + nút "Chạy ngay". Commit `ec8817f`. Xem DECISIONS #50/#51.
   - [x] 3.3 Trang Nguồn, client-side: mỗi nguồn 1 dòng (tên, badge loại, tóm tắt config dạng `key: value`, số item, toggle bật/tắt có loading + lỗi riêng); form thêm nguồn field động (github/hackernews/rss) validate client rồi insert, reload list + báo thành công; facebook read-only kèm ghi chú nguồn bị động. Migration `20261021_sources_write.sql` (policy INSERT/UPDATE + grant). Commit `7c8f888`. Xem DECISIONS #52.
-  - [ ] 3.4 Deploy **GitHub Pages** + redirect URL production + test auth/RLS — **workflow đã viết** (`.github/workflows/deploy-dashboard.yml`, commit `8c5d3ad`), build production đã test local OK; **chờ Phong làm mục “3.4 — Phong cần làm” bên dưới** rồi chạy workflow lần đầu. Chưa đánh dấu `[x]` vì chưa deploy thật.
+  - [ ] 3.4 Deploy **GitHub Pages** + redirect URL production + test auth/RLS — **workflow đã viết** (`.github/workflows/deploy-dashboard.yml`, commit `8c5d3ad`), build production đã test local OK; **chờ Phong làm mục “3.4 — Phong cần làm” bên dưới** (secrets → Pages → redirect → push `main`) rồi kiểm tra production. Chưa đánh dấu `[x]` vì chưa deploy thật.
 - **Phase 4:** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Làm sau Phase 1–3.
 
 ## Dữ liệu & repo hiện tại
@@ -67,6 +67,17 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 một phần — workflow d
 - URL sẽ có: **`https://phongnhat43.github.io/tool-bantin/`**
 - Callback chính xác: **`https://phongnhat43.github.io/tool-bantin/auth/callback/`**
 
+### Thứ tự làm (quan trọng)
+Không cần push trước khi làm 3 thiết lập — secrets/Pages/redirect là cấu hình trên GitHub/Supabase,
+không nằm trong code. Nhưng workflow chỉ xuất hiện trên GitHub **sau khi push**, và GitHub chỉ chạy
+workflow ở branch mặc định (`main`).
+
+Thứ tự sạch nhất, tránh fail lần đầu:
+**Bước 1 (secrets) → Bước 2 (Pages) → Bước 3 (redirect) → Bước 4 (push) → workflow tự chạy → verify.**
+
+Nếu đã lỡ push trước: cứ làm Bước 1–3 rồi vào Actions **Re-run all jobs** (hoặc **Run workflow**);
+không mất gì, chỉ có thể thấy 1 lần job đỏ do Pages chưa bật.
+
 ### Bước 1 — Tạo 2 GitHub Actions secrets
 Repo → **Settings → Secrets and variables → Actions → New repository secret**:
 
@@ -99,11 +110,18 @@ Giữ nguyên `http://localhost:3000/tool-bantin/auth/callback/` cho dev.
 (Không bắt buộc đổi “Site URL”; app luôn gửi `emailRedirectTo` nên redirect list là đủ. Muốn đổi thì đặt
 `https://phongnhat43.github.io/tool-bantin/`.)
 
-### Bước 4 — Chạy deploy lần đầu
-GitHub → tab **Actions** → **Deploy dashboard (GitHub Pages)** → **Run workflow** → branch `main` → Run.
+### Bước 4 — Push code lên `main` (bắt buộc để workflow tồn tại)
+Từ máy local:
 
-- Lần đầu **phải bấm tay**: workflow mới được thêm nhưng chưa có thay đổi nào trong `dashboard/**`
-  nên trigger `push` không chạy. Từ lần sau, push đổi `dashboard/**` lên `main` là tự deploy.
+```bash
+git push origin main
+```
+
+- Workflow chỉ có trên GitHub sau khi push; `workflow_dispatch` cũng chỉ xuất hiện sau đó.
+- Push này có thay đổi trong `dashboard/**` → workflow **tự chạy** (nếu đã làm Bước 1–3).
+- Nếu Actions không tự chạy: tab **Actions** → **Deploy dashboard (GitHub Pages)** → **Run workflow** → `main`.
+- Nếu đã push trước khi bật Pages và job `deploy` đỏ: làm Bước 2 rồi **Re-run all jobs**.
+- Push bị từ chối (non-fast-forward) thì pull/rebase rồi push lại; **không force push mù**.
 - Job `build` → `deploy` xanh; mở `https://phongnhat43.github.io/tool-bantin/`.
 
 ### Verify sau khi deploy
@@ -122,10 +140,10 @@ GitHub → tab **Actions** → **Deploy dashboard (GitHub Pages)** → **Run wor
   - (b) Authentication → URL Configuration → Redirect URLs: thêm `https://phongnhat43.github.io/tool-bantin/auth/callback/` (production) và `http://localhost:3000/tool-bantin/auth/callback/` nếu chưa có. `http://localhost:3000/auth/callback/` (không basePath) chỉ cần nếu chạy bản `NEXT_PUBLIC_BASE_PATH=""`.
   - (c) Thử login thật 1 lần: `npm run dev` → http://localhost:3000/tool-bantin/login/ → nhập `phongnhat43@gmail.com`. Lần test của agent bị **rate limit email của project** (`email rate limit exceeded`) nên phải dùng link do Admin API tạo.
 - ~~3.2 — chặn kỹ thuật nút "Chạy ngay"~~ **đã giải** (DECISIONS #50): dashboard gọi `rpc("trigger_run_cycle")`; secret vẫn đọc từ Vault trong function `security definer`, browser không thấy. Cần Phong chạy `supabase/migrations/20261021_rpc_grant.sql` trong SQL Editor (đã apply để test, chạy lại vô hại) — thiếu thì nút báo "chưa có RPC", Feed vẫn chạy.
-- **3.4 — GitHub Pages (thay Vercel):** workflow + build production đã xong, **chưa deploy thật**. Phong làm 4 bước ở mục “3.4 — Phong cần làm” (secrets → Pages source → Supabase redirect URL → Run workflow). ⚠️ Repo private: Pages cần gói Pro/Team/Enterprise.
+- **3.4 — GitHub Pages (thay Vercel):** workflow + build production đã xong, **chưa deploy thật**. Phong làm theo mục “3.4 — Phong cần làm” (secrets → Pages source → Supabase redirect URL → push `main` → workflow tự chạy / Run workflow). ⚠️ Repo private: Pages cần gói Pro/Team/Enterprise.
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1.
 - **Anthropic news:** không có feed chính thức (DECISIONS #28). Muốn lấy tin Anthropic thì scrape HTML `/news` hoặc dùng nguồn thứ ba — Phong quyết khi nào cần.
-- **Push:** local đang hơn `origin/main` khá nhiều commit (2.1b, 2.0b, 2.3, 3.1, 3.1b, 3.2 `ec8817f`, 3.3 `7c8f888` + docs, 3.4 `8c5d3ad`) — Phong push tay. **Lần đầu deploy phải bấm Run workflow** (workflow mới thêm, không có thay đổi `dashboard/**`).
+- **Push:** local đang hơn `origin/main` khá nhiều commit (2.1b, 2.0b, 2.3, 3.1, 3.1b, 3.2 `ec8817f`, 3.3 `7c8f888` + docs, 3.4 `8c5d3ad`) — Phong push tay. **Push `main` là bước bắt buộc để workflow lên GitHub**; nếu đã làm secrets + bật Pages trước thì push sẽ tự trigger deploy, không cần bấm Run.
 - **Contract với Merlin:** payload field chưa có spec cố định — endpoint chấp nhận alias rộng (xem `ingest-facebook/README.md`). Nếu Merlin gửi field lạ chưa map, xin 1 mẫu JSON để bổ sung alias.
 
 ## Lưu ý cho model mới
