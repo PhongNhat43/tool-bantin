@@ -1,0 +1,65 @@
+name: Deploy dashboard (GitHub Pages)
+
+# Chỉ deploy khi dashboard thay đổi trên main, hoặc bấm tay từ tab Actions.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "dashboard/**"
+  workflow_dispatch:
+
+# Quyền tối thiểu để deploy GitHub Pages qua OIDC.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Mỗi lúc chỉ 1 lượt deploy; lượt đang chạy không bị huỷ giữa chừng.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: dashboard/package-lock.json
+
+      - name: Install dependencies
+        working-directory: dashboard
+        run: npm ci
+
+      - name: Build static export
+        working-directory: dashboard
+        env:
+          # Chỉ 2 secret này (anon key công khai được, RLS bảo vệ dữ liệu).
+          # TUYỆT ĐỐI không đưa SUPABASE_SERVICE_ROLE_KEY vào dashboard.
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
+          # Pages project site: https://<user>.github.io/<repo>/
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+        run: npm run build
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dashboard/out
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
