@@ -611,3 +611,55 @@ npm run build → pass, out/nguon/index.html có trong static export
 - Test dùng link Admin API tạo để có session: callback lưu session vào localStorage nhưng lần này
   không tự chuyển trang, phải mở `/tool-bantin/nguon/` tay. Không ảnh hưởng trang Nguồn; cần kiểm tra
   lại luồng callback khi test magic link thật ở task 3.4.
+
+## 2026-10-20 — Task 3.4: workflow deploy dashboard lên GitHub Pages
+
+**Đã làm — `.github/workflows/deploy-dashboard.yml`**
+- Trigger: `push` vào `main` khi có thay đổi trong `dashboard/**` + `workflow_dispatch`
+  (chạy tay được; lần deploy đầu tiên phải bấm tay vì workflow mới chỉ thêm file CI,
+  không có thay đổi nào trong `dashboard/`).
+- `permissions`: `contents: read`, `pages: write`, `id-token: write`; job deploy gắn
+  `environment: github-pages`, `url` lấy từ output `deploy-pages`. Concurrency `pages`
+  (không huỷ lượt đang chạy).
+- `build`: checkout → setup-node 20 (cache npm theo `dashboard/package-lock.json`) →
+  `npm ci` → `npm run build` với đúng 2 secrets `NEXT_PUBLIC_SUPABASE_URL` +
+  `NEXT_PUBLIC_SUPABASE_ANON_KEY` (không service_role) → `upload-pages-artifact`
+  path `dashboard/out`.
+- `deploy`: `actions/deploy-pages@v4`.
+- Thêm `NEXT_PUBLIC_BASE_PATH=/${{ github.event.repository.name }}` khi build để basePath
+  luôn khớp tên repo Pages (hiện là `/tool-bantin`), tránh lệch nếu repo đổi tên.
+
+**Test local (mô phỏng đúng workflow, không deploy)**
+```text
+cd dashboard
+npm ci                                  → OK (chỉ warning audit có sẵn)
+set -a && . ./.env.local && set +a
+NEXT_PUBLIC_BASE_PATH=/tool-bantin npm run build
+  → pass; out/ có /, /login, /auth/callback/, /nguon/
+```
+- Artifact đúng basePath: `out/index.html` trỏ `/tool-bantin/_next/static/...`.
+- Bundle login có chuỗi ``${window.location.origin}/tool-bantin/auth/callback/``
+  → production sẽ thành `https://phongnhat43.github.io/tool-bantin/auth/callback/`.
+- Không có `SUPABASE_SERVICE_ROLE_KEY` trong `out/` (grep rỗng).
+- Serve tĩnh `out/` tại `http://localhost:3000/tool-bantin/` (python http.server + symlink
+  `tool-bantin -> dashboard/out`): session cũ còn hiệu lực → Feed hiện đúng 2 tin
+  "Cần xem ngay", 2 tin "Hôm nay", 50 tin "Tất cả"; `/nguon/` hiện 6 nguồn + form.
+  Chứng minh bản build production (không phải dev server) chạy được sau basePath.
+- YAML parse OK bằng Ruby (`jobs` = build/deploy; đủ 5 step build). Máy không có
+  `actionlint`/`gh` nên không kiểm tra được phía GitHub API.
+
+**Chờ Phong (agent không tự làm được) — chi tiết trong HANDOFF**
+1. Repo → Settings → Secrets and variables → Actions: tạo `NEXT_PUBLIC_SUPABASE_URL`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY` (lấy từ `dashboard/.env.local`, KHÔNG service_role).
+2. Repo → Settings → Pages → Source: **GitHub Actions**.
+3. Supabase → Authentication → URL Configuration: thêm
+   `https://phongnhat43.github.io/tool-bantin/auth/callback/`.
+4. Actions → "Deploy dashboard (GitHub Pages)" → Run workflow (main), đợi job xanh rồi mở
+   `https://phongnhat43.github.io/tool-bantin/` kiểm tra đăng nhập + feed.
+
+**Cảnh báo cần kiểm tra**
+- Repo hiện **private**. GitHub Pages cho repo private chỉ có ở gói **Pro/Team/Enterprise**;
+  nếu tài khoản đang Free thì Settings → Pages sẽ không bật được → phải chuyển repo sang
+  public (repo không chứa secret, `.env*` đã ignore) hoặc nâng gói. Không tự đổi visibility.
+- Trang Pages là file tĩnh công khai, nhưng dữ liệu vẫn do Supabase Auth + RLS chặn:
+  chưa đăng nhập chỉ thấy shell + `/login`.

@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 20/10/2026 (sau Task 3.3 — trang Nguồn: list + toggle + form thêm nguồn)_
+_Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 một phần — workflow deploy GitHub Pages đã viết, chờ Phong bật Pages/secrets)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -27,7 +27,7 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.3 — trang Nguồn: list + t
   - [x] 3.1b **Chuyển dashboard sang static export cho GitHub Pages** (thay Vercel): `output: "export"` + `trailingSlash` + `basePath=/tool-bantin`; `RequireAuth` (client) chặn route private; `/login` + `/auth/callback` client (PKCE, fallback hash token); trang chủ fetch client; bỏ `@supabase/ssr`. Build ra `out/`, đã test serve tĩnh + login + logout. Commit `d0b5ab0`. Xem DECISIONS #48/#49.
   - [x] 3.2 Trang Feed đúng demo, client-side: 3 khối (Cần xem ngay ≥70 max 20 / Hôm nay 40–69 trong 24h max 30 / Tất cả + search title+content + lọc nguồn + Tải thêm 50), dòng Feedly (ô điểm vuông + tiêu đề/meta, expand: nội dung 500 ký tự + breakdown 4 thành phần + engagement gốc + link gốc), theme light mặc định + toggle dark (localStorage, không nháy), header sticky + nút "Chạy ngay". Commit `ec8817f`. Xem DECISIONS #50/#51.
   - [x] 3.3 Trang Nguồn, client-side: mỗi nguồn 1 dòng (tên, badge loại, tóm tắt config dạng `key: value`, số item, toggle bật/tắt có loading + lỗi riêng); form thêm nguồn field động (github/hackernews/rss) validate client rồi insert, reload list + báo thành công; facebook read-only kèm ghi chú nguồn bị động. Migration `20261021_sources_write.sql` (policy INSERT/UPDATE + grant). Commit `7c8f888`. Xem DECISIONS #52.
-  - [ ] 3.4 Deploy **GitHub Pages** (thay Vercel) + redirect URL production + test auth/RLS — chờ Phong chốt lại nội dung. **TASK TIẾP THEO**.
+  - [ ] 3.4 Deploy **GitHub Pages** + redirect URL production + test auth/RLS — **workflow đã viết** (`.github/workflows/deploy-dashboard.yml`, commit `8c5d3ad`), build production đã test local OK; **chờ Phong làm mục “3.4 — Phong cần làm” bên dưới** rồi chạy workflow lần đầu. Chưa đánh dấu `[x]` vì chưa deploy thật.
 - **Phase 4:** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Làm sau Phase 1–3.
 
 ## Dữ liệu & repo hiện tại
@@ -50,15 +50,68 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.3 — trang Nguồn: list + t
   - Không còn `proxy.ts` / Server Component đọc DB / Route Handler — GitHub Pages không chạy server. `RequireAuth` (client) chặn route private; thêm route private mới thì bọc `RequireAuth`.
   - Auth: `/login` gửi magic link (`emailRedirectTo = origin + BASE_PATH + /auth/callback/`) → `/auth/callback` client đổi `?code=` (PKCE), fallback token trong hash → `/`.
   - RLS: `20261020_dashboard_rls.sql` **đã apply**; policy SELECT `authenticated` cho 3 bảng. Anon thấy 0 row, authenticated thấy dữ liệu. `20261021_sources_write.sql` (3.3) **đã apply**: thêm policy INSERT/UPDATE cho `sources` (authenticated) — xem mục treo.
-  - Auth URL: remote `site_url = http://localhost:3000`; redirect `http://localhost:3000/tool-bantin/auth/callback/` **đã được GoTrue chấp nhận** (test 3.1b). Còn thiếu URL GitHub Pages.
+  - Auth URL: remote `site_url = http://localhost:3000`; redirect `http://localhost:3000/tool-bantin/auth/callback/` **đã được GoTrue chấp nhận** (test 3.1b). Production cần thêm `https://phongnhat43.github.io/tool-bantin/auth/callback/` — xem mục 3.4.
   - User Auth: **`phongnhat43@gmail.com`** (đã confirm); user test mail.tm đã xoá.
   - Chạy: `cd dashboard && npm run dev` → http://localhost:3000/tool-bantin/; `npm run build` sinh `out/`; `npm run lint` pass.
   - Xem bản tĩnh: `ln -sfn "$PWD/dashboard/out" /tmp/bantin-preview/tool-bantin && npx serve -l 3000 /tmp/bantin-preview`.
-  - Feed 3 khối + theme + Chạy ngay đã xong (3.2). Trang `/nguon` đã xong (3.3): list 6 nguồn + toggle + form thêm nguồn; facebook read-only. Chưa deploy (3.4 → GitHub Pages).
+  - Feed 3 khối + theme + Chạy ngay đã xong (3.2). Trang `/nguon` đã xong (3.3): list 6 nguồn + toggle + form thêm nguồn; facebook read-only. Deploy GitHub Pages: workflow đã viết (3.4, `8c5d3ad`) — **chờ Phong bật Pages/secrets + chạy workflow lần đầu** (mục 3.4 bên dưới).
+  - Deploy: `.github/workflows/deploy-dashboard.yml` — push `main` đổi `dashboard/**` hoặc `workflow_dispatch` → Node 20 + `npm ci` + `npm run build` (2 secret public) → `upload-pages-artifact` (`dashboard/out`) → `deploy-pages`, environment `github-pages`.
   - Nguồn: `lib/sources.ts` + `components/sources-manager.tsx`; config form map đúng key collector (`rss` dùng `config.url`). `enabled=false` chỉ dừng **thu thập**, item cũ vẫn được chấm/notify.
   - "Chạy ngay": `rpc("trigger_run_cycle")` (void, pg_net async) rồi poll `rpc("run_cycle_result")` 2s/lần ≤120s. Cần migration `20261021_rpc_grant.sql` (agent đã apply để test; chạy lại vô hại).
-- **Git:** `origin/main` = `2535038`; local hơn origin nhiều commit (1.5b, 1.6, 2.1, 2.2, 2.0, 2.1b `1e42c2c`, 2.0b `bfcad05`, 2.3, 3.1, 3.1b `d0b5ab0`, 3.2 `ec8817f` + docs, 3.3 `7c8f888` + docs). Agent không có credential → **nhờ Phong push tay**.
-- **Working tree:** sau commit 3.3 chỉ còn `supabase/.temp/` untracked (dashboard/.next, dashboard/out, node_modules đã ignore). `supabase/config.toml` đã chốt + commit; `config.toml.bak` đã xoá.
+- **Git:** `origin/main` = `2535038`; local hơn origin nhiều commit (1.5b, 1.6, 2.1, 2.2, 2.0, 2.1b `1e42c2c`, 2.0b `bfcad05`, 2.3, 3.1, 3.1b `d0b5ab0`, 3.2 `ec8817f` + docs, 3.3 `7c8f888` + docs, 3.4 `8c5d3ad`). Agent không có credential → **nhờ Phong push tay**.
+- **Working tree:** sạch sau commit docs 3.4, chỉ còn `supabase/.temp/` untracked (dashboard/.next, dashboard/out, node_modules đã ignore; `.env*` ignored).
+
+## 3.4 — Phong cần làm (deploy production, agent không tự làm được)
+
+- Repo: `https://github.com/PhongNhat43/tool-bantin` (private)
+- URL sẽ có: **`https://phongnhat43.github.io/tool-bantin/`**
+- Callback chính xác: **`https://phongnhat43.github.io/tool-bantin/auth/callback/`**
+
+### Bước 1 — Tạo 2 GitHub Actions secrets
+Repo → **Settings → Secrets and variables → Actions → New repository secret**:
+
+| Name | Value |
+|---|---|
+| `NEXT_PUBLIC_SUPABASE_URL` | dòng `NEXT_PUBLIC_SUPABASE_URL=` trong `dashboard/.env.local` |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | dòng `NEXT_PUBLIC_SUPABASE_ANON_KEY=` trong `dashboard/.env.local` |
+
+- **KHÔNG** tạo `SUPABASE_SERVICE_ROLE_KEY` (workflow không dùng; service role chỉ ở backend/collector).
+- Xem giá trị local: `cd dashboard && grep '^NEXT_PUBLIC_' .env.local` (không commit, không dán vào chat).
+- Secret đã lưu thì GitHub không cho đọc lại, chỉ sửa/xoá được.
+
+### Bước 2 — Bật Pages, source = GitHub Actions
+Repo → **Settings → Pages → Build and deployment → Source: GitHub Actions**.
+Không chọn “Deploy from a branch”.
+
+⚠️ **Repo đang private**: GitHub Pages cho repo private chỉ có ở gói **Pro/Team/Enterprise**.
+Nếu Settings → Pages không cho bật (hoặc workflow báo `Get Pages site failed`), chọn 1 trong 2:
+- chuyển repo sang **public** (repo không chứa secret — `.env*` đã ignore; dữ liệu vẫn do Supabase Auth/RLS chặn), hoặc
+- nâng gói GitHub. Agent **không tự đổi visibility**.
+
+### Bước 3 — Thêm redirect URL production vào Supabase
+Supabase Dashboard → **Authentication → URL Configuration → Redirect URLs → Add URL**:
+
+```
+https://phongnhat43.github.io/tool-bantin/auth/callback/
+```
+
+Giữ nguyên `http://localhost:3000/tool-bantin/auth/callback/` cho dev.
+(Không bắt buộc đổi “Site URL”; app luôn gửi `emailRedirectTo` nên redirect list là đủ. Muốn đổi thì đặt
+`https://phongnhat43.github.io/tool-bantin/`.)
+
+### Bước 4 — Chạy deploy lần đầu
+GitHub → tab **Actions** → **Deploy dashboard (GitHub Pages)** → **Run workflow** → branch `main` → Run.
+
+- Lần đầu **phải bấm tay**: workflow mới được thêm nhưng chưa có thay đổi nào trong `dashboard/**`
+  nên trigger `push` không chạy. Từ lần sau, push đổi `dashboard/**` lên `main` là tự deploy.
+- Job `build` → `deploy` xanh; mở `https://phongnhat43.github.io/tool-bantin/`.
+
+### Verify sau khi deploy
+- Mở URL khi chưa login → bị đẩy `/tool-bantin/login/`.
+- Nhập `phongnhat43@gmail.com` → nhận magic link → callback → thấy Feed thật (3 khối).
+- `/tool-bantin/nguon/` bật/tắt được nguồn + thêm nguồn (cần migration `20261021_sources_write.sql` đã chạy).
+- DevTools → Sources: bundle chỉ có anon key, **không** có service_role.
+- Nếu magic link báo `redirect_uri not allowed` → kiểm tra lại đúng URL ở Bước 3 (có dấu `/` cuối).
 
 ## Quyết định đang treo
 - ~~2.3 — Phong chạy SQL~~ **xong**: job `run-cycle-2h` active (`0 */2 * * *`), `net._http_response` trả 200.
@@ -69,10 +122,10 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.3 — trang Nguồn: list + t
   - (b) Authentication → URL Configuration → Redirect URLs: thêm `https://phongnhat43.github.io/tool-bantin/auth/callback/` (production) và `http://localhost:3000/tool-bantin/auth/callback/` nếu chưa có. `http://localhost:3000/auth/callback/` (không basePath) chỉ cần nếu chạy bản `NEXT_PUBLIC_BASE_PATH=""`.
   - (c) Thử login thật 1 lần: `npm run dev` → http://localhost:3000/tool-bantin/login/ → nhập `phongnhat43@gmail.com`. Lần test của agent bị **rate limit email của project** (`email rate limit exceeded`) nên phải dùng link do Admin API tạo.
 - ~~3.2 — chặn kỹ thuật nút "Chạy ngay"~~ **đã giải** (DECISIONS #50): dashboard gọi `rpc("trigger_run_cycle")`; secret vẫn đọc từ Vault trong function `security definer`, browser không thấy. Cần Phong chạy `supabase/migrations/20261021_rpc_grant.sql` trong SQL Editor (đã apply để test, chạy lại vô hại) — thiếu thì nút báo "chưa có RPC", Feed vẫn chạy.
-- **3.4 — GitHub Pages (thay Vercel):** cần bật Pages cho repo (source GitHub Actions hoặc branch `gh-pages` chứa `out/`), thêm redirect URL production vào Supabase Auth; env production chỉ URL + anon key (không secret).
+- **3.4 — GitHub Pages (thay Vercel):** workflow + build production đã xong, **chưa deploy thật**. Phong làm 4 bước ở mục “3.4 — Phong cần làm” (secrets → Pages source → Supabase redirect URL → Run workflow). ⚠️ Repo private: Pages cần gói Pro/Team/Enterprise.
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1.
 - **Anthropic news:** không có feed chính thức (DECISIONS #28). Muốn lấy tin Anthropic thì scrape HTML `/news` hoặc dùng nguồn thứ ba — Phong quyết khi nào cần.
-- **Push:** local đang hơn `origin/main` khá nhiều commit (2.1b, 2.0b, 2.3, 3.1, 3.1b, 3.2 `ec8817f`, 3.3 `7c8f888` + docs) — Phong push tay.
+- **Push:** local đang hơn `origin/main` khá nhiều commit (2.1b, 2.0b, 2.3, 3.1, 3.1b, 3.2 `ec8817f`, 3.3 `7c8f888` + docs, 3.4 `8c5d3ad`) — Phong push tay. **Lần đầu deploy phải bấm Run workflow** (workflow mới thêm, không có thay đổi `dashboard/**`).
 - **Contract với Merlin:** payload field chưa có spec cố định — endpoint chấp nhận alias rộng (xem `ingest-facebook/README.md`). Nếu Merlin gửi field lạ chưa map, xin 1 mẫu JSON để bổ sung alias.
 
 ## Lưu ý cho model mới
@@ -94,5 +147,5 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.3 — trang Nguồn: list + t
 - ⚠️ **Cột `items.engagement` là not-null** (`default '{}'`), nhưng PostgREST bulk-upsert điền NULL cho row thiếu key. Mọi upsert theo lô phải luôn gửi `engagement` (object, kể cả `{}`) — bài học #38.
 - **Notify:** chỉ tin `published_at` ≤48h; `notify_now` hoặc ≥70 → instant; 40–69 → digest; <40 chỉ lưu DB. Dedup bằng `notification_log`, chỉ log sau khi Telegram `ok:true` (#40/#41/#44).
 - ⚠️ Khi test 3.3 bằng link Admin API: session được lưu nhưng callback không tự chuyển trang (đứng ở "Đang xác thực magic link…") — phải mở `/tool-bantin/nguon/` tay. Chưa rõ do dev/tooling hay code callback; **kiểm tra lại luồng magic link thật khi làm 3.4** (3.1b từng test OK).
-- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3, 3.1, 3.1b, 3.2, 3.3; **VIỆC TIẾP THEO = 3.4 (deploy GitHub Pages)**.
-- Phân vân thì xem DECISIONS #14–#52: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault; #47 dashboard proxy/RLS (đã thay bằng static export); #48 GitHub Pages; #49 callback fallback hash token; #50 nút Chạy ngay qua RPC + poll; #51 revoke EXECUTE của anon trên function `public`; #52 facebook read-only ở trang Nguồn.
+- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3, 3.1, 3.1b, 3.2, 3.3; **VIỆC TIẾP THEO = hoàn tất 3.4** (Phong làm 4 bước, chạy workflow, test production rồi mới đánh `[x]`).
+- Phân vân thì xem DECISIONS #14–#53: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault; #47 dashboard proxy/RLS (đã thay bằng static export); #48 GitHub Pages; #49 callback fallback hash token; #50 nút Chạy ngay qua RPC + poll; #51 revoke EXECUTE của anon trên function `public`; #52 facebook read-only ở trang Nguồn; #53 deploy bằng Pages artifact + 2 secret public + basePath theo tên repo.
