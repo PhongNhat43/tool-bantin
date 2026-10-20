@@ -433,3 +433,70 @@ npm run dev   → dùng để test E2E
 - Trang chủ hiện là list thô, chưa làm UI Feedly — task 3.2.
 
 - Commit: cùng task 3.1 (dashboard + migration + docs).
+
+---
+
+## 20/10/2026 — Task 3.1b: dashboard → static export cho GitHub Pages
+
+**Vì sao:** đổi quyết định deploy từ Vercel sang GitHub Pages. Pages chỉ phục vụ file
+tĩnh → `proxy.ts`, Server Component đọc DB, Route Handler, `@supabase/ssr` (cookie server)
+đều không chạy được.
+
+**Đã làm**
+- `next.config.ts`: `output: "export"`, `trailingSlash: true`, `basePath: "/tool-bantin"`
+  (mặc định, override bằng `NEXT_PUBLIC_BASE_PATH`), `images.unoptimized`,
+  `env.NEXT_PUBLIC_BASE_PATH` để client dựng redirect URL.
+- Xoá `proxy.ts`, `lib/supabase/server.ts`, `app/auth/callback/route.ts`; bỏ `@supabase/ssr`
+  khỏi dependencies (không dùng ở static export).
+- `lib/supabase/client.ts`: `@supabase/supabase-js` singleton, `flowType: "pkce"`,
+  `detectSessionInUrl: true`, session trong localStorage, chỉ anon key.
+- `components/require-auth.tsx`: chặn route private ở client (`getSession()` → không có
+  thì `router.replace("/login")`), nghe `onAuthStateChange` để logout là bị đá ra.
+- `/login`: `emailRedirectTo = origin + BASE_PATH + /auth/callback/`; đã có session thì vào feed.
+- `/auth/callback` → client component: chờ `detectSessionInUrl` trước, sau đó
+  `exchangeCodeForSession(code)`; fallback nhận `#access_token`/`#refresh_token`
+  (link admin tạo không kèm `code_challenge` thì GoTrue trả implicit hash) rồi `setSession`.
+- Trang chủ: client component, `from("items").select("id, title, url, score, published_at, sources(name)")
+  .order("published_at", desc).limit(10)`, giữ UI tạm như 3.1.
+
+**Kiểm tra**
+```text
+npm run build → pass, sinh out/ (out/index.html, out/login/index.html, out/auth/callback/index.html)
+npm run lint  → pass (0 error)
+asset path trong out/ đúng basePath: /tool-bantin/_next/static/...
+login chunk inlined: {window.location.origin}/tool-bantin/auth/callback/
+```
+Serve tĩnh (basePath nên serve qua thư mục bọc `tool-bantin -> out`):
+```bash
+ln -sfn "$PWD/out" /tmp/bantin-preview/tool-bantin
+npx serve -l 3000 /tmp/bantin-preview
+```
+E2E thật trên trình duyệt (http://localhost:3000/tool-bantin/):
+- chưa login → tự đẩy `/tool-bantin/login/` (thấy "Đang kiểm tra đăng nhập…" → login);
+- magic link thật (GoTrue verify → `/auth/callback/#access_token=…`) → về `/tool-bantin/`,
+  hiện **10 item thật** (Vibe Code, Simon Willison, Hacker News…), có score + nguồn;
+- bấm Đăng xuất → `/login/`; mở lại `/tool-bantin/` → bị chặn về `/login/`;
+- anon key gọi REST `items` vẫn trả `[]` (RLS `authenticated` còn nguyên).
+
+**Vướng & cách xử lý**
+- Supabase báo `email rate limit exceeded` (project hết quota gửi mail/giờ) nên **không gửi
+  được mail thật** trong phiên này. Đã xác minh bằng link do Admin API tạo
+  (`/auth/v1/admin/generate_link`, cùng user thật) → GoTrue verify → callback → session thật.
+  Redirect `http://localhost:3000/tool-bantin/auth/callback/` được GoTrue chấp nhận (200).
+- Link admin tạo không kèm `code_challenge` nên GoTrue trả token ở hash; `flowType: pkce`
+  từ chối implicit URL (auth-js: "Not a valid PKCE flow url") → thêm fallback `setSession`
+  trong callback. Magic link thật từ `/login` vẫn đi đường PKCE `?code=`.
+- User test (`test3b-…@maxxspace.com`) + hộp thư tạm mail.tm đã xoá sau test.
+
+**Còn chờ Phong (Supabase dashboard)**
+- (a) Authentication → Settings: "Allow new users to sign up" — **đang TẮT sẵn** (OTP trả
+  `Signups not allowed for otp`), giữ nguyên.
+- (b) Authentication → URL Configuration: thêm `https://phongnhat43.github.io/tool-bantin/auth/callback/`
+  (local `http://localhost:3000/tool-bantin/auth/callback/` đã được chấp nhận; nếu muốn
+  chạy bản không basePath thì thêm `http://localhost:3000/auth/callback/`).
+
+**Ghi chú**
+- 3.2 (Feed UI) phải làm theo kiểu client-side (không Server Component/searchParams server).
+- 3.4 (deploy) đổi từ Vercel sang GitHub Pages — chờ chốt lại nội dung.
+
+- Commit: `d0b5ab0` (code) + commit docs.
