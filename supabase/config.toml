@@ -1,11 +1,5 @@
-// Supabase project config (do `supabase` CLI đọc khi deploy).
-//
-// ingest-facebook là webhook do Merlin POST vào bằng secret riêng
-// (header `x-ingest-secret`), KHÔNG dùng JWT của Supabase
-// -> phải tắt verify_jwt cho riêng function này.
-//
-// Nếu deploy qua dashboard (không dùng CLI): tắt tay "Enforce JWT Verification"
-// trong cài đặt function ingest-facebook.
-
 [functions.ingest-facebook]
+verify_jwt = false
+
+[functions.run-cycle]
 verify_jwt = false
