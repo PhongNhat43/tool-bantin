@@ -136,10 +136,13 @@ git push origin main
 - DevTools → Sources: bundle chỉ có anon key, **không** có service_role.
 - Nếu magic link báo `redirect_uri not allowed` → kiểm tra lại đúng URL ở Bước 3 (có dấu `/` cuối).
 - **Nếu trang báo “This page couldn't load”** và console có
-  `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` → build lúc deploy thiếu
-  `NEXT_PUBLIC_SUPABASE_URL`. Kiểm tra đúng **Repository secrets** (tab Secrets), thêm URL rồi
-  **Re-run all jobs**; không cần sửa code. Dấu hiệu nhận biết: bundle có anon key (`eyJ…`) nhưng
-  không có chuỗi `*.supabase.co`.
+  `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` → build lúc deploy thiếu hoặc sai
+  `NEXT_PUBLIC_SUPABASE_URL`. Kiểm tra đúng **Repository secrets** (tab Secrets), rồi
+  **Re-run all jobs**; không cần sửa code.
+  - Dấu hiệu thiếu URL: bundle có anon key (`eyJ…`) nhưng không có chuỗi `*.supabase.co`.
+  - Dấu hiệu **hoán đổi 2 secret**: bundle có `new sl("eyJ…","https://….supabase.co",{auth…})`
+    (anon key đứng trước) thay vì đúng thứ tự `new sl("https://….supabase.co","eyJ…",{auth…})`.
+    Sửa lại: URL = `https://gkyneqfagcqgliwtxyfs.supabase.co`, ANON_KEY = chuỗi `eyJ…`.
 
 ## Quyết định đang treo
 - ~~2.3 — Phong chạy SQL~~ **xong**: job `run-cycle-2h` active (`0 */2 * * *`), `net._http_response` trả 200.
