@@ -548,3 +548,66 @@ E2E thật trên trình duyệt (http://localhost:3000/tool-bantin/):
 - User test `rpc-test-3b@maxxspace.com` đã xoá sau test.
 
 - Commit: `ec8817f`.
+
+## 2026-10-20 — Task 3.3: trang Nguồn (list + toggle + form thêm nguồn)
+
+**Việc đã làm**
+- `supabase/migrations/20261021_sources_write.sql`: thêm policy INSERT (`with check (true)`) và
+  UPDATE (`using (true) with check (true)`) cho role `authenticated` trên `public.sources`, kèm
+  `grant insert, update` — RLS ở 3.1 mới chỉ có SELECT nên toggle/form bị chặn. Không đổi schema.
+- `dashboard/lib/sources.ts`: `fetchManagedSources` (kèm count từng nguồn, count lỗi → `null` hiện
+  "?"), `setSourceEnabled` (dùng `.select()` để phát hiện RLS chặn UPDATE trả 0 dòng mà không lỗi),
+  `createSource`, `buildNewSource` validate + dựng config đúng key collector (`github: query/min_stars/days`,
+  `hackernews: queries[]/min_points`, `rss: url` — KHÔNG phải `feed_url`), `configSummary`,
+  `writeErrorText` (map lỗi RLS/JWT sang hướng dẫn chạy migration).
+- `dashboard/components/sources-manager.tsx`: mỗi nguồn 1 dòng — tên, badge loại, số item đã thu thập,
+  tóm tắt config dạng cặp `key: value`, toggle bật/tắt (role=switch, disable + "Đang lưu…" khi lưu,
+  lỗi hiện riêng từng dòng). Form thêm nguồn: chọn loại → field động; github query bắt buộc,
+  min_stars 50 / days 14 mặc định; hackernews queries phẩy, min_points 30; rss tên + feed_url
+  (`type=url` + validate http/https). Tên nguồn github/hn tự đặt từ query (hiện preview).
+  Sau insert: reload list + báo thành công.
+- `dashboard/app/nguon/page.tsx`: bỏ placeholder, bọc `RequireAuth` + `SiteHeader` + manager.
+- `dashboard/app/globals.css`: style `.source-row`, `.badge`, `.toggle`, `.config`, form `.field`
+  theo demo Feedly; light + dark; mobile cho row xuống 2 dòng.
+- Facebook: row read-only (không toggle), ghi chú "Nguồn bị động — Merlin quét hộ theo lịch riêng,
+  muốn thêm group mới thì báo Merlin"; form cũng ghi chú không thêm FB. Ghi DECISIONS #52.
+
+**Migration & RLS — đã test thật**
+- Agent đã apply `20261021_sources_write.sql` bằng `supabase db query --linked -f`
+  (Phong vẫn nên chạy lại trong SQL Editor — file idempotent).
+- `pg_policies` của `sources`: có `authenticated_read_sources` (SELECT),
+  `authenticated_insert_sources` (INSERT), `authenticated_update_sources` (UPDATE).
+- SQL test trong transaction với `set local role authenticated` → UPDATE + INSERT thành công rồi rollback;
+  `set local role anon` → INSERT bị chặn `42501 new row violates row-level security policy` (đúng).
+
+**E2E trên trình duyệt (session thật, dev server)**
+- `/nguon/` hiện 6 nguồn: GitHub AI coding 19 tin, Hacker News 19, Simon Willison 31,
+  Antigravity VN 13, Cộng đồng Claude AI & AI Agents Việt Nam 11, Vibe Code kiếm cơm 31.
+  Config hiện đúng: github `days/query/last_seen/min_stars`, HN `queries/min_points`, RSS `url/last_seen`,
+  FB `group_id/group_url`.
+- Toggle GitHub: bấm → bắt được trạng thái `aria-busy=true` + "Đang lưu…"; DB `enabled=false`;
+  UI row `off`, `aria-checked=false`; bấm lại → `enabled=true`, UI về bật.
+- Form validate: github query rỗng → "Query GitHub không được để trống."; min_stars `abc` →
+  "Min stars phải là số nguyên ≥ 0."; HN queries rỗng → báo đúng; RSS `not-a-url` →
+  "Feed URL phải là URL hợp lệ (http:// hoặc https://)."
+- Insert thật 3 loại (rồi xoá sạch): HN → row mới + notice "Đã thêm nguồn …", config
+  `{queries:[...], min_points}`; RSS → `{url:"https://example.com/feed.xml"}`; GitHub →
+  `{query, min_stars:75, days:7}`. List tự reload (6 → 7 → 8 → 9 dòng), count về 0 tin cho nguồn mới.
+- Dọn test: xoá 3 source test → DB còn đúng 6 source thật, không sót row test.
+- Theme dark kiểm tra lại: row/badge/toggle/form đọc rõ, không lệch màu.
+
+**Kiểm tra build**
+```text
+cd dashboard
+npm run lint  → pass (0 error)
+npm run build → pass, out/nguon/index.html có trong static export
+```
+
+**Lưu ý cho model sau**
+- `enabled=false` chỉ dừng **thu thập** nguồn đó; item đã có trong DB vẫn được chấm điểm/notify
+  (scoring không lọc theo `sources.enabled`). Đúng phạm vi toggle của task.
+- Nguồn Facebook không có toggle vì `ingest-facebook` không đọc `enabled` và `run-cycle` bỏ qua FB
+  → toggle sẽ vô tác dụng (DECISIONS #52).
+- Test dùng link Admin API tạo để có session: callback lưu session vào localStorage nhưng lần này
+  không tự chuyển trang, phải mở `/tool-bantin/nguon/` tay. Không ảnh hưởng trang Nguồn; cần kiểm tra
+  lại luồng callback khi test magic link thật ở task 3.4.
