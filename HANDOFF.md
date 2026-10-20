@@ -83,8 +83,13 @@ Repo → **Settings → Secrets and variables → Actions → New repository sec
 
 | Name | Value |
 |---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | dòng `NEXT_PUBLIC_SUPABASE_URL=` trong `dashboard/.env.local` |
+| `NEXT_PUBLIC_SUPABASE_URL` | dòng `NEXT_PUBLIC_SUPABASE_URL=` trong `dashboard/.env.local` (dạng `https://gkyneqfagcqgliwtxyfs.supabase.co`) |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | dòng `NEXT_PUBLIC_SUPABASE_ANON_KEY=` trong `dashboard/.env.local` |
+
+- Phải nằm ở tab **Secrets** của **Repository secrets** — không phải tab **Variables**, không phải
+  **Environment secrets** (build job không khai báo environment nên environment secrets sẽ không có tác dụng).
+- Thêm/sửa secret **sau** một lần chạy thì phải **Re-run all jobs** (hoặc Run workflow) — secret chỉ
+  được inject từ lần chạy mới, không tự sửa deployment cũ.
 
 - **KHÔNG** tạo `SUPABASE_SERVICE_ROLE_KEY` (workflow không dùng; service role chỉ ở backend/collector).
 - Xem giá trị local: `cd dashboard && grep '^NEXT_PUBLIC_' .env.local` (không commit, không dán vào chat).
@@ -130,6 +135,11 @@ git push origin main
 - `/tool-bantin/nguon/` bật/tắt được nguồn + thêm nguồn (cần migration `20261021_sources_write.sql` đã chạy).
 - DevTools → Sources: bundle chỉ có anon key, **không** có service_role.
 - Nếu magic link báo `redirect_uri not allowed` → kiểm tra lại đúng URL ở Bước 3 (có dấu `/` cuối).
+- **Nếu trang báo “This page couldn't load”** và console có
+  `Invalid supabaseUrl: Must be a valid HTTP or HTTPS URL` → build lúc deploy thiếu
+  `NEXT_PUBLIC_SUPABASE_URL`. Kiểm tra đúng **Repository secrets** (tab Secrets), thêm URL rồi
+  **Re-run all jobs**; không cần sửa code. Dấu hiệu nhận biết: bundle có anon key (`eyJ…`) nhưng
+  không có chuỗi `*.supabase.co`.
 
 ## Quyết định đang treo
 - ~~2.3 — Phong chạy SQL~~ **xong**: job `run-cycle-2h` active (`0 */2 * * *`), `net._http_response` trả 200.
