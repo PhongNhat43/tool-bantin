@@ -38,6 +38,11 @@
   - Workflow: push `main` đổi `dashboard/**` hoặc `workflow_dispatch` → build static export → upload artifact → deploy Pages (environment `github-pages`).
   - Production config: 2 Repository secrets (URL + anon key), Pages source = GitHub Actions, redirect URL `https://phongnhat43.github.io/tool-bantin/auth/callback/` đã thêm ở Supabase Auth.
   - Sự cố đã gặp + cách sửa: xem HANDOFF mục “3.4 — Production đã deploy” (thiếu URL secret / hoán đổi 2 secret).
+- [x] 3.5 Feed v2: chia section theo NGÀY + đếm tin + trạng thái đã đọc (20/10, 86fe7c5)
+  - Dải thống kê `Hôm nay N tin · M chưa đọc · quét lần cuối HH:MM`; N theo ngày Bangkok, M là unread 7 ngày gần nhất, giờ quét lấy `run_cycle_result.created` (fallback `max(items.created_at)`).
+  - `Cần xem ngay` = score ≥70 & trong 48h (max 10); `Hôm nay` = mọi item ngày Bangkok, score giảm dần; các ngày trước gom nhóm 7 ngày, thu gọn mặc định, `Xem thêm 7 ngày` mở rộng cửa sổ; dedupe hot > nhóm ngày.
+  - Đã đọc lưu localStorage key `read-items` (tối đa 500 id gần nhất); mở rộng dòng → hết đậm/chấm xanh biến mất, M giảm; tải lại trang giữ trạng thái. Search 3.2 giữ nguyên, kết quả cũng áp dụng đã đọc.
+  - Test: `npm run lint` + `npm run build` pass; dữ liệu thật N=16, M=78, khối Hôm nay có 16 tin, 7 nhóm ngày (21/6/9/6/5/10/12), tin 70 điểm ngày 11/10 không còn ở hot; empty hot/today đúng câu; click đọc + reload giữ trạng thái.
   - Tiêu chí xong Phase 3: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa; production đăng nhập được — **đạt**.
 
 ## Phase 4 — Khai thác & tương tác (AI layer) — ý tưởng chốt 19/10/2026, làm sau khi Phase 1–3 vận hành trơn

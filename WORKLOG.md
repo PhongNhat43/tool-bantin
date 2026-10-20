@@ -694,3 +694,40 @@ magic link và xem Feed thật OK.
    `NEXT_PUBLIC_SUPABASE_ANON_KEY = eyJ…`, Re-run all jobs → trang load, login + Feed OK.
 
 **Commit:** workflow `8c5d3ad`; docs 3.4 `48f2bbd`, `e5e3812`, `fa3d1f2`, `0c41dab` + commit hoàn tất 3.4.
+
+## 2026-10-20 — Task 3.5: Feed v2 chia theo ngày + đếm tin + đã đọc
+
+**Đã làm**
+- Bỏ 3 khối cũ (Cần xem ngay/Hôm nay/Tất cả) trong `components/feed-sections.tsx`; thay bằng `Feed` mới:
+  dải thống kê → filter → Cần xem ngay → Hôm nay → các nhóm ngày → `Xem thêm 7 ngày`.
+- `lib/feed.ts`: helper ngày Bangkok (`Intl` + fixed +07), `buildFeed()` tách hot/today/day groups,
+  dedupe hot > nhóm ngày, đếm N/M, fallback `created_at` mới nhất.
+- `lib/items.ts`: thêm `created_at` vào `Item`; `fetchFeedWindow()` query theo mốc ngày (phân trang 1000,
+  cap 5000), `fetchLatestItemCreatedAt()` fallback khi RPC không đọc được; bỏ `fetchTopItems`/`fetchTodayItems`.
+- `lib/read-items.ts`: localStorage key **`read-items`**, tối đa **500 id gần nhất**, thêm id mới lên đầu,
+  an toàn khi JSON hỏng/localStorage bị chặn.
+- `components/item-row.tsx`: nhận `read` + `onRead`; mở rộng lần đầu đánh dấu đã đọc; chưa đọc = tiêu đề
+  đậm 700 + chấm xanh trước tiêu đề; đã đọc = 500, không chấm.
+- `app/page.tsx` dùng `<Feed refreshKey={refreshKey} />`; `app/globals.css` thêm stats, day toggle, dot, weight.
+- Search 3.2 giữ nguyên (query title/content, lọc nguồn, Tải thêm 50) nhưng kết quả dùng chung trạng thái đã đọc.
+- Không đổi schema, scoring, collector hay pipeline notify.
+
+**Kiểm tra thật**
+- `cd dashboard && npm run lint` → pass 0 error.
+- `npm run build` → pass; static export đủ `/`, `/login`, `/auth/callback`, `/nguon`.
+- Dữ liệu thật (20/10, Bangkok): stats **Hôm nay 16 tin · 78 chưa đọc · quét lần cuối 11:00**;
+  16 item Hôm nay; 7 nhóm ngày trước với count **21/6/9/6/5/10/12** (19→13/10), tất cả thu gọn.
+- Tin 70 điểm ngày **11/10** (cũ >48h): không nằm trong Cần xem ngay; sau `Xem thêm 7 ngày` nằm trong
+  nhóm ngày 11/10 (6 item, score đầu 70). Cần xem ngay hiện đúng dòng `Chưa có tin nóng trong 48h qua`.
+- Click item đầu → mở, bỏ chấm, tiêu đề weight 500, **M 78 → 77**, localStorage có id; reload vẫn 77.
+- Search `prompt` → 10 kết quả, item đã đọc trước đó không còn chấm; click thêm 1 tin trong 7 ngày →
+  **M 77 → 76**, localStorage giữ 2 id.
+- Override fetch tạm thời để test trạng thái trống: hot hiện đúng `Chưa có tin nóng trong 48h qua`;
+  Hôm nay hiện đúng `Hôm nay chưa có tin mới — kỳ quét gần nhất 11:00 (3/3 nguồn OK)`. Sau đó restore fetch,
+  reload lại dữ liệu thật.
+- Test offline `feed-test.mts` (Node strip-types) → **feed tests passed**: tz Bangkok, hot 48h, dedupe,
+  todayTotal, groups 7/14 ngày, empty model, cắt localStorage đúng 500 id.
+
+**Commit:** `86fe7c5` (code). Docs 3.5 cập nhật cùng ngày.
+**Push:** chưa thực hiện được — môi trường không có credential GitHub (`git push` báo `could not read Username`);
+xem HANDOFF mục Git.

@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 — dashboard đã lên production, Phase 3 xong)_
+_Cập nhật lần cuối: 20/10/2026 (sau Task 3.5 — Feed v2 chia theo ngày + trạng thái đã đọc)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -28,6 +28,7 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 — dashboard đã lên pro
   - [x] 3.2 Trang Feed đúng demo, client-side: 3 khối (Cần xem ngay ≥70 max 20 / Hôm nay 40–69 trong 24h max 30 / Tất cả + search title+content + lọc nguồn + Tải thêm 50), dòng Feedly (ô điểm vuông + tiêu đề/meta, expand: nội dung 500 ký tự + breakdown 4 thành phần + engagement gốc + link gốc), theme light mặc định + toggle dark (localStorage, không nháy), header sticky + nút "Chạy ngay". Commit `ec8817f`. Xem DECISIONS #50/#51.
   - [x] 3.3 Trang Nguồn, client-side: mỗi nguồn 1 dòng (tên, badge loại, tóm tắt config dạng `key: value`, số item, toggle bật/tắt có loading + lỗi riêng); form thêm nguồn field động (github/hackernews/rss) validate client rồi insert, reload list + báo thành công; facebook read-only kèm ghi chú nguồn bị động. Migration `20261021_sources_write.sql` (policy INSERT/UPDATE + grant). Commit `7c8f888`. Xem DECISIONS #52.
   - [x] 3.4 Deploy **GitHub Pages** + redirect URL production + test auth/RLS — **production live 20/10: https://phongnhat43.github.io/tool-bantin/**; đăng nhập magic link + Feed OK. Workflow `.github/workflows/deploy-dashboard.yml`, commit `8c5d3ad`. Chi tiết + troubleshooting ở mục “3.4 — Production đã deploy”.
+  - [x] 3.5 **Feed v2**: dải thống kê `Hôm nay N tin · M chưa đọc · quét lần cuối HH:MM`; `Cần xem ngay` = score ≥70 & ≤48h (max 10); `Hôm nay` = mọi item ngày Bangkok; các ngày trước gom nhóm 7 ngày (thu gọn, `Xem thêm 7 ngày` mở rộng); dedupe hot > nhóm ngày; đọc/chưa đọc lưu localStorage `read-items` (500 id gần nhất), search 3.2 áp dụng chung. Commit `86fe7c5` — **chưa push được, production vẫn là bản 3.4** (xem mục Git).
 - **Phase 4:** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Làm sau Phase 1–3.
 
 ## Dữ liệu & repo hiện tại
@@ -54,12 +55,12 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 3.4 — dashboard đã lên pro
   - User Auth: **`phongnhat43@gmail.com`** (đã confirm); user test mail.tm đã xoá.
   - Chạy: `cd dashboard && npm run dev` → http://localhost:3000/tool-bantin/; `npm run build` sinh `out/`; `npm run lint` pass.
   - Xem bản tĩnh: `ln -sfn "$PWD/dashboard/out" /tmp/bantin-preview/tool-bantin && npx serve -l 3000 /tmp/bantin-preview`.
-  - Feed 3 khối + theme + Chạy ngay đã xong (3.2). Trang `/nguon` đã xong (3.3): list 6 nguồn + toggle + form thêm nguồn; facebook read-only. Deploy GitHub Pages đã xong (3.4, `8c5d3ad`): **production live tại https://phongnhat43.github.io/tool-bantin/** — login + Feed OK.
+  - Feed 3 khối + theme + Chạy ngay đã xong (3.2); **Feed v2 (3.5, `86fe7c5`)** chia theo ngày, có stats + đã đọc localStorage. Trang `/nguon` đã xong (3.3): list 6 nguồn + toggle + form thêm nguồn; facebook read-only. Deploy GitHub Pages đã xong (3.4, `8c5d3ad`): **production live tại https://phongnhat43.github.io/tool-bantin/** — login + Feed OK, nhưng production vẫn là bản 3.4 vì commit 3.5 chưa push được.
   - Deploy: `.github/workflows/deploy-dashboard.yml` — push `main` đổi `dashboard/**` hoặc `workflow_dispatch` → Node 20 + `npm ci` + `npm run build` (2 secret public) → `upload-pages-artifact` (`dashboard/out`) → `deploy-pages`, environment `github-pages`.
   - Nguồn: `lib/sources.ts` + `components/sources-manager.tsx`; config form map đúng key collector (`rss` dùng `config.url`). `enabled=false` chỉ dừng **thu thập**, item cũ vẫn được chấm/notify.
   - "Chạy ngay": `rpc("trigger_run_cycle")` (void, pg_net async) rồi poll `rpc("run_cycle_result")` 2s/lần ≤120s. Cần migration `20261021_rpc_grant.sql` (agent đã apply để test; chạy lại vô hại).
-- **Git:** `origin/main` = `e5e3812` (Phong đã push, deploy production chạy từ đây); local hơn `fa3d1f2` + `0c41dab` (docs troubleshooting secret) + commit hoàn tất 3.4 — **nhờ Phong push tay** các commit docs này.
-- **Working tree:** sau commit hoàn tất 3.4 chỉ còn `supabase/.temp/` untracked (dashboard/.next, dashboard/out, node_modules đã ignore; `.env*` ignored).
+- **Git:** `origin/main` = `e5e3812` (Phong đã push, deploy production chạy từ đây). Local đang hơn remote: docs troubleshooting 3.4 (`fa3d1f2`, `0c41dab`), docs hoàn tất 3.4, code 3.5 `86fe7c5`, docs 3.5. **Push chưa làm được** — môi trường không có credential GitHub (`fatal: could not read Username for 'https://github.com': Device not configured`); nhờ Phong push tay toàn bộ commit local, sau đó production sẽ tự deploy bản 3.5.
+- **Working tree:** code + docs 3.5 đã commit; chỉ còn `supabase/.temp/` untracked (dashboard/.next, dashboard/out, node_modules đã ignore; `.env*` ignored).
 
 ## 3.4 — Production đã deploy (20/10/2026)
 
@@ -159,7 +160,7 @@ git push origin main
 - ~~3.4 — GitHub Pages~~ **xong 20/10**: production live `https://phongnhat43.github.io/tool-bantin/`, đăng nhập magic link + Feed OK. Workflow `.github/workflows/deploy-dashboard.yml`; secrets URL/anon key đã đúng; Pages source = GitHub Actions; redirect URL production đã thêm. Sự cố thiếu/hoán đổi secret đã sửa — xem mục 3.4.
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1.
 - **Anthropic news:** không có feed chính thức (DECISIONS #28). Muốn lấy tin Anthropic thì scrape HTML `/news` hoặc dùng nguồn thứ ba — Phong quyết khi nào cần.
-- **Push:** `origin/main` = `e5e3812` (đã có 3.4). Local còn `fa3d1f2` + `0c41dab` (docs troubleshooting) + commit hoàn tất 3.4 — Phong push tay.
+- **Push:** `origin/main` = `e5e3812` (đã có 3.4). Local còn docs 3.4 + code 3.5 `86fe7c5` + docs 3.5 — agent không có credential GitHub nên **Phong push tay**. Sau khi push, GitHub Actions sẽ deploy Feed v2 lên production.
 - **Contract với Merlin:** payload field chưa có spec cố định — endpoint chấp nhận alias rộng (xem `ingest-facebook/README.md`). Nếu Merlin gửi field lạ chưa map, xin 1 mẫu JSON để bổ sung alias.
 
 ## Lưu ý cho model mới
@@ -181,5 +182,6 @@ git push origin main
 - ⚠️ **Cột `items.engagement` là not-null** (`default '{}'`), nhưng PostgREST bulk-upsert điền NULL cho row thiếu key. Mọi upsert theo lô phải luôn gửi `engagement` (object, kể cả `{}`) — bài học #38.
 - **Notify:** chỉ tin `published_at` ≤48h; `notify_now` hoặc ≥70 → instant; 40–69 → digest; <40 chỉ lưu DB. Dedup bằng `notification_log`, chỉ log sau khi Telegram `ok:true` (#40/#41/#44).
 - ✅ Magic link production đã test OK ở 3.4 (20/10). Nếu dùng link do Admin API tạo mà đứng ở "Đang xác thực magic link…", mở tay route cần vào — đó là tooling test, không phải luồng user thật.
-- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3, 3.1, 3.1b, 3.2, 3.3, **3.4**. **Phase 3 đã xong**; việc tiếp theo: chờ Phong chốt bắt đầu **Phase 4** (4.1 bookmark → 4.2 chat với AI → 4.3 briefing tuần → 4.4 gợi ý theo mục tiêu).
-- Phân vân thì xem DECISIONS #14–#53: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault; #47 dashboard proxy/RLS (đã thay bằng static export); #48 GitHub Pages; #49 callback fallback hash token; #50 nút Chạy ngay qua RPC + poll; #51 revoke EXECUTE của anon trên function `public`; #52 facebook read-only ở trang Nguồn; #53 deploy bằng Pages artifact + 2 secret public + basePath theo tên repo.
+- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3, 3.1, 3.1b, 3.2, 3.3, 3.4, **3.5**. **Phase 3 đã xong**; việc tiếp theo: chờ Phong chốt bắt đầu **Phase 4** (4.1 bookmark → 4.2 chat với AI → 4.3 briefing tuần → 4.4 gợi ý theo mục tiêu).
+- **Feed v2 (3.5):** trạng thái đã đọc nằm trong **localStorage `read-items`**, không phải DB; tối đa 500 id gần nhất, mở rộng dòng mới đánh dấu. Khi làm bookmark Phase 4 thì chuyển sang DB (DECISIONS #54). Đừng đổi trục feed về chia theo điểm.
+- Phân vân thì xem DECISIONS #14–#54: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault; #47 dashboard proxy/RLS (đã thay bằng static export); #48 GitHub Pages; #49 callback fallback hash token; #50 nút Chạy ngay qua RPC + poll; #51 revoke EXECUTE của anon trên function `public`; #52 facebook read-only ở trang Nguồn; #53 deploy bằng Pages artifact + 2 secret public + basePath theo tên repo; #54 feed v2 chia theo ngày + đã đọc localStorage (chuyển DB ở Phase 4).
