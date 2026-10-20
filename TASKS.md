@@ -29,10 +29,11 @@
   - Tiêu chí xong: có tin mới vào DB mỗi 2h, Telegram nhận được tin điểm cao
 
 ## Phase 3 — Dashboard web (Next.js) — thiết kế final chốt 19/10/2026, xem demo tại dashboard-demo.html v2
-- [ ] 3.1 Khởi tạo Next.js (App Router) + TypeScript trong `dashboard/`, deploy Vercel; Supabase Auth magic link 1 user; đọc DB qua Server Components
+- [x] 3.1 Scaffold Next.js 16 (App Router, TypeScript, không src-dir) trong `dashboard/`; Supabase Auth magic link 1 user; proxy chặn route chưa đăng nhập; RLS SELECT cho `authenticated`; trang chủ tạm đọc 10 item mới nhất bằng Server Component (20/10 — `npm run dev`/`build`/`lint` pass; `/` chưa login → `/login`; magic link thật gửi qua hộp thư test → callback → thấy 10 item; logout OK; RLS đã apply; redirect URL localhost đã thêm)
 - [ ] 3.2 Trang Feed đúng demo: 3 khối (Cần xem ngay ≥70 / Hôm nay 40–69 / Tất cả + search + filter nguồn/chủ đề), hàng ngang kiểu Feedly (ô score vuông bo góc trái + tiêu đề/meta phải), bấm expand hiện mô tả + breakdown điểm + link gốc; theme light mặc định + toggle dark; nút "Chạy ngay" gọi run-cycle
 - [ ] 3.3 Trang Nguồn: danh sách + toggle bật/tắt + form thêm nguồn (field động theo loại) — đúng yêu cầu "thêm tay nguồn mới"
-  - Tiêu chí xong: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa
+- [ ] 3.4 Deploy Vercel + env production (`NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY`), thêm redirect URL Vercel vào Supabase Auth, kiểm tra đăng nhập + RLS trên production
+  - Tiêu chí xong Phase 3: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa; production đăng nhập được
 
 ## Phase 4 — Khai thác & tương tác (AI layer) — ý tưởng chốt 19/10/2026, làm sau khi Phase 1–3 vận hành trơn
 Mục đích: biến thông tin thành hành động — không để tin nằm chết trong dashboard.

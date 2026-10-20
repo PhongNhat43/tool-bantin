@@ -3,7 +3,7 @@
 > "Bản giao ca" cho model mới: đầu mỗi session đọc theo thứ tự
 > AGENTS.md (luật) → TASKS.md (việc) → HANDOFF.md (trạng thái) → DECISIONS.md (quyết định đã chốt).
 
-_Cập nhật lần cuối: 20/10/2026 (sau Task 2.3 — migration pg_cron, chờ Phong chạy SQL)_
+_Cập nhật lần cuối: 20/10/2026 (sau Task 3.1 — dashboard scaffold + magic link)_
 
 ## Đang ở đâu
 - **Phase 0: xong** — Supabase project, schema 3 bảng, git + GitHub, Telegram bot + group nhận tin
@@ -23,6 +23,10 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 2.3 — migration pg_cron, ch�
   - [x] 2.1b `supabase/config.toml` tối thiểu (`verify_jwt=false` cho ingest-facebook + run-cycle); xoá `.bak`; deploy **không flag** + verify sai secret → JSON 401 của code. Commit `1e42c2c`; DECISIONS #45.
   - [x] 2.3 pg_cron + pg_net + Vault — migration `20261020_run_cycle_cron.sql`, wrapper `public.trigger_run_cycle()`, job `run-cycle-2h` lịch `0 */2 * * *`; secret Vault placeholder `__CRON_SECRET__`. **Chưa chạy SQL — chờ Phong chạy SQL Editor + verify.** Xem DECISIONS #46.
 - **Phase 3:** thiết kế dashboard đã chốt (light mặc định, Feedly/RSS tối giản) — chi tiết ở AGENTS.md mục 5. ✅ Demo có trong repo: **`dashboard-demo.html`** (v2, 404 dòng, light + toggle dark) — Phase 3 phải đối chiếu file này, không tự đoán (TASKS.md 3.2).
+  - [x] 3.1 Scaffold Next.js 16 trong `dashboard/`: App Router, TypeScript, không src-dir; `@supabase/ssr` magic link; `proxy.ts` chặn route chưa login; RLS SELECT `authenticated`; trang chủ tạm 10 item mới nhất. **Đã test E2E thật** (mail.tm): `/` → `/login`, magic link → callback → thấy 10 item, logout OK. `npm run dev/build/lint` pass. Xem DECISIONS #47.
+  - [ ] 3.2 Trang Feed đúng demo (3 khối, Feedly, expand breakdown, dark toggle, nút Chạy ngay) — **TASK TIẾP THEO**.
+  - [ ] 3.3 Trang Nguồn (list + toggle + form thêm nguồn).
+  - [ ] 3.4 Deploy Vercel + env production + redirect URL Vercel + test auth/RLS production.
 - **Phase 4:** bookmark, thảo luận với AI, briefing tuần, gợi ý theo mục tiêu — TASKS.md Phase 4. Làm sau Phase 1–3.
 
 ## Dữ liệu & repo hiện tại
@@ -41,14 +45,23 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 2.3 — migration pg_cron, ch�
   Test nhánh lỗi **ghi thật vào DB** (tạo rồi xoá 6 source `[TEST] ...`), cần `SUPABASE_SERVICE_ROLE_KEY`.
   RSS test đã mock feed Simon bằng fixture `rss-collector/testdata/feed.xml` (30 entry, snapshot 20/10) → **không gọi mạng RSS**, đã chạy 10 lần 10/10 pass.
 - **Telegram:** `TELEGRAM_BOT_TOKEN` + `NOTIFY_CHAT_ID=-1004434350401` (group "Bản tin AI") trong `.env` local. ⚠️ Phải là id group (số âm), không phải user id.
-- **Git:** `origin/main` = `2535038`; local hơn origin nhiều commit (1.5b, 1.6, 2.1, 2.2, 2.0, 2.1b `1e42c2c`, 2.0b `bfcad05`, 2.3 + docs). Agent không có credential → **nhờ Phong push tay**.
-- **Working tree:** chỉ còn `supabase/.temp/` untracked. `supabase/config.toml` đã chốt + commit; `config.toml.bak` đã xoá.
+- **Dashboard:** `dashboard/` — Next.js **16.4.2** (App Router, TS), `@supabase/ssr` 0.12.7. Env local `NEXT_PUBLIC_SUPABASE_URL` + `NEXT_PUBLIC_SUPABASE_ANON_KEY` trong `dashboard/.env.local` (gitignored; **không** service_role).
+  - Auth: magic link `/login` → `/auth/callback` (PKCE); `proxy.ts` (Next 16 đổi tên middleware) redirect route chưa login.
+  - RLS: `20261020_dashboard_rls.sql` **đã apply**; policy SELECT `authenticated` cho 3 bảng. Anon thấy 0 row, authenticated thấy dữ liệu.
+  - Auth URL: remote `site_url = http://localhost:3000`, `additional_redirect_urls` đã có `http://localhost:3000/auth/callback`.
+  - User Auth: **`phongnhat43@gmail.com`** (đã confirm); user test mail.tm đã xoá.
+  - Chạy: `cd dashboard && npm run dev` → http://localhost:3000; `npm run build`/`npm run lint` pass.
+  - Trang chủ hiện là list thô 10 item; UI Feedly để 3.2. Chưa deploy Vercel (3.4).
+- **Git:** `origin/main` = `2535038`; local hơn origin nhiều commit (1.5b, 1.6, 2.1, 2.2, 2.0, 2.1b `1e42c2c`, 2.0b `bfcad05`, 2.3, 3.1 + docs). Agent không có credential → **nhờ Phong push tay**.
+- **Working tree:** sau commit 3.1 chỉ còn `supabase/.temp/` untracked (dashboard/.next + node_modules đã ignore). `supabase/config.toml` đã chốt + commit; `config.toml.bak` đã xoá.
 
 ## Quyết định đang treo
 - **2.3 — Phong chạy SQL:** mở SQL Editor, chạy 4 khối trong `supabase/migrations/20261020_run_cycle_cron.sql`; thay `__CRON_SECRET__` bằng giá trị trong `.env` local. `CRON_SECRET` đã set sẵn trên Supabase secrets (không cần tạo mới). Verify `cron.job` có `run-cycle-2h`, gọi tay `select public.trigger_run_cycle()`, check `cron.job_run_details` + `net._http_response` (status 200). Nếu `create extension` báo thiếu quyền/không có → báo lại.
+- **3.1 — Phong thử login:** mở http://localhost:3000/login, nhập `phongnhat43@gmail.com` (user đã tạo) → nhận magic link. Nếu link báo hết hạn, gửi lại (email scanner có thể dùng mất link single-use).
+- **3.4 — Vercel:** khi deploy cần thêm `https://<domain>/auth/callback` vào Supabase Auth redirect URLs; env Vercel chỉ URL + anon key.
 - **Reddit:** giữ ở v1 (nộp đơn phê duyệt API ngay) hay đẩy sang v2? → Đề xuất: nộp đơn ngay, code để cuối Phase 1.
 - **Anthropic news:** không có feed chính thức (DECISIONS #28). Muốn lấy tin Anthropic thì scrape HTML `/news` hoặc dùng nguồn thứ ba — Phong quyết khi nào cần.
-- **Push:** local đang hơn `origin/main` khá nhiều commit (thêm 2.1b, 2.0b, 2.3) — Phong push tay.
+- **Push:** local đang hơn `origin/main` khá nhiều commit (thêm 2.1b, 2.0b, 2.3, 3.1) — Phong push tay.
 - **Contract với Merlin:** payload field chưa có spec cố định — endpoint chấp nhận alias rộng (xem `ingest-facebook/README.md`). Nếu Merlin gửi field lạ chưa map, xin 1 mẫu JSON để bổ sung alias.
 
 ## Lưu ý cho model mới
@@ -62,10 +75,12 @@ _Cập nhật lần cuối: 20/10/2026 (sau Task 2.3 — migration pg_cron, ch�
   `supabase functions deploy ingest-facebook --project-ref gkyneqfagcqgliwtxyfs`
   `supabase/config.toml` đã có `verify_jwt = false` cho cả 2.
 - **Migration 2.3:** `supabase/migrations/20261020_run_cycle_cron.sql` — chưa chạy; Phong chạy SQL Editor. Placeholder `__CRON_SECRET__` phải thay bằng giá trị thật trước khi chạy; file commit không chứa secret.
+- **Dashboard:** `cd dashboard && npm run dev`; env ở `dashboard/.env.local` (URL + anon key, không commit). Next 16 dùng **`proxy.ts`** thay `middleware.ts`; đừng tạo thêm `middleware.ts` (build sẽ báo cả 2 file).
+- **Supabase CLI:** đã `supabase link --project-ref gkyneqfagcqgliwtxyfs`; có thể chạy SQL bằng `supabase db query --linked "select ..."` hoặc `supabase db query --linked -f <file>.sql` (không cần DB password).
 - **Runtime:** Deno 2.9.7. Chạy collector local: `deno run --allow-net --allow-env --allow-read index.ts --once` (cờ đặt SAU tên file).
 - **Deno KHÔNG có `DOMParser`/`XMLSerializer`/`Document`** — dùng `_shared/xml.ts` (35 test pass). Xem DECISIONS #23.
 - ⚠️ **Đừng viết test import thẳng `index.ts` của collector/run-cycle.** `Deno.serve` bind `127.0.0.1:8000`, health-check của editor gọi vào → handler chạy thêm 1 lượt song song → flaky. Test import `collector.ts`.
 - ⚠️ **Cột `items.engagement` là not-null** (`default '{}'`), nhưng PostgREST bulk-upsert điền NULL cho row thiếu key. Mọi upsert theo lô phải luôn gửi `engagement` (object, kể cả `{}`) — bài học #38.
 - **Notify:** chỉ tin `published_at` ≤48h; `notify_now` hoặc ≥70 → instant; 40–69 → digest; <40 chỉ lưu DB. Dedup bằng `notification_log`, chỉ log sau khi Telegram `ok:true` (#40/#41/#44).
-- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3; **VIỆC TIẾP THEO = Phong chạy SQL 2.3 + verify, sau đó Phase 3 (hoặc 1.3 Reddit nếu API được duyệt)**.
-- Phân vân thì xem DECISIONS #14–#46: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault.
+- **TASKS.md đã từng bị ghi đè mất dấu `[x]`** — Phong sửa trên bản hiện tại (DECISIONS #31). Nếu thấy mất dấu, re-apply cho 0.1–0.4, 1.1, 1.2, 1.4, 1.5, 1.5b, 1.6, 2.0–2.3, 3.1; **VIỆC TIẾP THEO = 3.2 (Feed UI)**, sau đó 3.3 → 3.4; 2.3 vẫn chờ Phong chạy SQL.
+- Phân vân thì xem DECISIONS #14–#47: #14–#18 collector; #20 orchestrator; #21 scoring; #22 mục 7; #29–#34 test/tách file; #35 ưu tiên 1.6; #36–#38 ingest-facebook; #39 scoring làm tròn; #40–#41 notify; #42–#44 thứ tự Phase 2 + notify lib + giới hạn 48h; #45 config.toml tối thiểu; #46 pg_cron + Vault; #47 dashboard proxy/RLS.

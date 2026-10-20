@@ -379,3 +379,57 @@ select id, status_code, content, created from net._http_response order by create
 `cron.job_run_details` chỉ chứng minh wrapper chạy không lỗi SQL; `net._http_response.status_code = 200` mới chứng minh HTTP tới run-cycle thành công.
 
 - Commit: cùng task 2.3 (migration + TASKS/WORKLOG/DECISIONS/HANDOFF).
+
+## 2026-10-20 — Task 3.1: scaffold dashboard Next.js + magic link
+
+**Setup**
+- `npx create-next-app@latest dashboard --typescript --app --no-src-dir --no-tailwind --eslint --use-npm --import-alias "@/*" --disable-git --empty --yes`
+- Next.js **16.4.2**, React **19.3.0**.
+- `npm install @supabase/supabase-js @supabase/ssr` → `@supabase/ssr` 0.12.7, `@supabase/supabase-js` 2.118.0.
+- `dashboard/.env.local` lấy `SUPABASE_URL` + `SUPABASE_ANON_KEY` từ `.env` root; **không** đưa service_role vào dashboard; file đã gitignore.
+- `next.config.ts`: bỏ `cacheComponents`/`partialPrefetching` mặc định của template để auth + đọc DB động đơn giản ở task này.
+
+**Auth**
+- `lib/supabase/client.ts` (browser) + `lib/supabase/server.ts` (Server Component/Route Handler, đọc/ghi cookie).
+- `/login`: client gọi `signInWithOtp({ email, options: { emailRedirectTo: origin + "/auth/callback" } })`.
+- `/auth/callback`: Route Handler đổi `code` bằng `exchangeCodeForSession`, redirect `/`; lỗi → `/login?error=auth`.
+- `proxy.ts`: Next.js 16 đổi tên middleware → proxy; chuẩn @supabase/ssr (`getUser()` + refresh cookie). Chặn mọi route chưa đăng nhập, cho qua `/login` + `/auth/*`; matcher bỏ static + `auth/callback`.
+- Nút Đăng xuất: `signOut()` → `/login`.
+
+**RLS**
+- `supabase/migrations/20261020_dashboard_rls.sql`: enable RLS 3 bảng, policy SELECT `to authenticated using (true)`, grant SELECT cho authenticated.
+- Đã chạy thật bằng `supabase link --project-ref gkyneqfagcqgliwtxyfs` + `supabase db query --linked -f supabase/migrations/20261020_dashboard_rls.sql`.
+- Verify `pg_policies`: 3 policy `authenticated_read_items`, `authenticated_read_sources`, `authenticated_read_notification_log`.
+- Anon query `items` = 0 row; authenticated = thấy dữ liệu.
+
+**Auth URL config**
+- Remote `auth.site_url` đã là `http://localhost:3000`.
+- Thêm `http://localhost:3000/auth/callback` vào `auth.additional_redirect_urls` bằng `supabase config push` (tạm thêm block `[auth]`, push xong restore `supabase/config.toml` tối thiểu).
+- Production Vercel sẽ thêm URL ở task 3.4.
+
+**E2E đã test thật**
+- `GET /` chưa login → `307 Location: /login`.
+- Tạo user `phongnhat43@gmail.com` (đã confirm); chỉ user này còn lại sau test.
+- Test magic link bằng hộp thư tạm mail.tm (tránh đụng Gmail thật):
+  - nhập email trên `/login` → nhận mail "Your sign-in link";
+  - bấm link → `/auth/callback` → `/`;
+  - trang chủ hiện đúng **10 item thật** (Vibe Code, Simon Willison, Hacker News...), có score + nguồn;
+  - bấm Đăng xuất → `/login`; mở lại `/` → vẫn bị đẩy `/login`.
+- Lần link đầu fail (có thể do scanner của hộp thư dùng mất magic link single-use); lần gửi lại thành công. Không phải lỗi code.
+- User test + hộp thư tạm đã xoá.
+
+**Kiểm tra**
+```text
+npm run lint  → pass (0 error)
+npm run build → pass
+Route (app): / (dynamic), /auth/callback, /login
+Proxy (Middleware) detected
+npm run dev   → dùng để test E2E
+```
+
+**Ghi chú**
+- `dashboard/AGENTS.md` do create-next-app/next dev tự sinh (Next 16 breaking changes); giữ lại.
+- Chưa deploy Vercel — task 3.4.
+- Trang chủ hiện là list thô, chưa làm UI Feedly — task 3.2.
+
+- Commit: cùng task 3.1 (dashboard + migration + docs).
