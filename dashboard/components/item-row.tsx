@@ -14,7 +14,15 @@ import { sourceOf, type Item } from "@/lib/items";
 const CONTENT_LIMIT = 500;
 
 /** Một dòng tin kiểu Feedly: ô điểm bên trái, tiêu đề + meta bên phải. */
-export function ItemRow({ item }: { item: Item }) {
+export function ItemRow({
+  item,
+  read = false,
+  onRead,
+}: {
+  item: Item;
+  read?: boolean;
+  onRead?: (id: string) => void;
+}) {
   const [open, setOpen] = useState(false);
 
   const hot = item.score >= 70;
@@ -23,27 +31,38 @@ export function ItemRow({ item }: { item: Item }) {
   const engagement = engagementParts(item.engagement);
   const content = item.content?.trim();
 
+  function toggle() {
+    // Mở rộng lần đầu = đánh dấu đã đọc ngay lúc đó.
+    if (!open) onRead?.(item.id);
+    setOpen((value) => !value);
+  }
+
   function onKeyDown(event: KeyboardEvent<HTMLElement>) {
     if (event.target !== event.currentTarget) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setOpen((value) => !value);
+      toggle();
     }
   }
 
   return (
     <article
-      className={`item ${hot ? "hot" : ""} ${open ? "open" : ""}`}
+      className={`item ${hot ? "hot" : ""} ${open ? "open" : ""} ${read ? "" : "unread"}`}
       role="button"
       tabIndex={0}
       aria-expanded={open}
-      onClick={() => setOpen((value) => !value)}
+      onClick={toggle}
       onKeyDown={onKeyDown}
     >
       <div className={`score ${scoreTier(item.score)}`}>{item.score}</div>
 
       <div className="body">
-        <h3>{item.title}</h3>
+        <h3>
+          {read ? null : (
+            <span className="unread-dot" title="Chưa đọc" aria-hidden="true" />
+          )}
+          {item.title}
+        </h3>
         <div className="meta">
           <span>{sourceLine(source?.name, source?.type)}</span>
           <span>·</span>

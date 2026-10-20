@@ -9,6 +9,7 @@ export type Item = {
   url: string;
   author: string | null;
   published_at: string | null;
+  created_at: string | null;
   score: number;
   engagement: Record<string, unknown> | null;
   source_id: string;
@@ -23,7 +24,7 @@ export type Source = {
 };
 
 const ITEM_FIELDS =
-  "id, title, content, url, author, published_at, score, engagement, source_id, sources(name, type)";
+  "id, title, content, url, author, published_at, created_at, score, engagement, source_id, sources(name, type)";
 
 export const PAGE_SIZE = 50;
 
@@ -32,34 +33,49 @@ export function sourceOf(item: Item): SourceRef | null {
   return Array.isArray(item.sources) ? (item.sources[0] ?? null) : item.sources;
 }
 
-/** Khối "Cần xem ngay": score >= 70, mới nhất trước, tối đa 20. */
-export async function fetchTopItems(client: SupabaseClient): Promise<Item[]> {
+/** Fallback khi chưa đọc được run_cycle_result: created_at mới nhất trong items. */
+export async function fetchLatestItemCreatedAt(
+  client: SupabaseClient,
+): Promise<string | null> {
   const { data, error } = await client
     .from("items")
-    .select(ITEM_FIELDS)
-    .gte("score", 70)
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(20);
+    .select("created_at")
+    .order("created_at", { ascending: false, nullsFirst: false })
+    .limit(1);
 
   if (error) throw new Error(error.message);
-  return (data ?? []) as unknown as Item[];
+  const row = ((data ?? []) as unknown as { created_at: string | null }[])[0];
+  return row?.created_at ?? null;
 }
 
-/** Khối "Hôm nay": 40 <= score < 70, published_at trong 24h, tối đa 30. */
-export async function fetchTodayItems(client: SupabaseClient): Promise<Item[]> {
-  const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+/**
+ * Cửa sổ feed: mọi item published_at từ mốc `since` trở lại đây (mới nhất trước).
+ * Phân trang 1000/lần để không bị giới hạn PostgREST khi dữ liệu dày.
+ */
+export async function fetchFeedWindow(
+  client: SupabaseClient,
+  since: string,
+): Promise<Item[]> {
+  const pageSize = 1000;
+  const maxRows = 5000;
+  const rows: Item[] = [];
 
-  const { data, error } = await client
-    .from("items")
-    .select(ITEM_FIELDS)
-    .gte("score", 40)
-    .lt("score", 70)
-    .gte("published_at", since)
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(30);
+  for (let offset = 0; offset < maxRows; offset += pageSize) {
+    const { data, error } = await client
+      .from("items")
+      .select(ITEM_FIELDS)
+      .gte("published_at", since)
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .range(offset, offset + pageSize - 1);
 
-  if (error) throw new Error(error.message);
-  return (data ?? []) as unknown as Item[];
+    if (error) throw new Error(error.message);
+
+    const page = (data ?? []) as unknown as Item[];
+    rows.push(...page);
+    if (page.length < pageSize) break;
+  }
+
+  return rows;
 }
 
 /** PostgREST `.or()` ngăn cách bằng dấu phẩy và dùng ngoặc — bỏ ký tự phá cú pháp. */
