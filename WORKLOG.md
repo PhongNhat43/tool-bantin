@@ -319,3 +319,63 @@ Chạy lặp 10 lần liên tiếp:
 ```
 - Test vẫn ghi DB thật (tạo/xoá 6 source `[TEST] ...`), chỉ mạng RSS được mock.
 - Commit: cùng task 2.0b (test + fixture + TASKS/WORKLOG).
+
+## 2026-10-20 — Task 2.1b: chốt `supabase/config.toml`
+
+**Đã làm:**
+- Lấy bản config tối thiểu đang ở `supabase/config.toml.bak` (89 bytes) làm `supabase/config.toml`; xoá `.bak`.
+- Nội dung chốt:
+```toml
+[functions.ingest-facebook]
+verify_jwt = false
+
+[functions.run-cycle]
+verify_jwt = false
+```
+- Deploy lại **không dùng flag** `--no-verify-jwt`:
+  `supabase functions deploy ingest-facebook --project-ref gkyneqfagcqgliwtxyfs`
+  `supabase functions deploy run-cycle --project-ref gkyneqfagcqgliwtxyfs`
+  → CLI 2.121.0 parse config + deploy thành công.
+
+**Verify verify_jwt=false có hiệu lực từ config:**
+```
+POST /functions/v1/ingest-facebook  (x-ingest-secret: wrong-secret)
+→ HTTP 401 {"ok":false,"error":"secret sai hoặc thiếu"}
+POST /functions/v1/run-cycle        (x-cron-secret: wrong-secret)
+→ HTTP 401 {"ok":false,"error":"secret sai hoặc thiếu"}
+```
+Body là JSON do code của mình trả, không phải lỗi JWT của Supabase → request đã vào tới function, chứng minh `verify_jwt=false` từ config.
+
+**Ghi nhận:** parse error cũ do field lạ trong config cũ (không thuộc schema CLI 2.121.0); config tối thiểu chỉ chứa key CLI hiểu mới parse được. Xem DECISIONS #45.
+
+- Commit: `1e42c2c`.
+
+## 2026-10-20 — Task 2.3: pg_cron gọi `run-cycle` mỗi 2h
+
+**File:** `supabase/migrations/20261020_run_cycle_cron.sql` (chưa chạy — Phong chạy trong SQL Editor).
+
+**Nội dung:**
+- Bật `pg_cron`, `pg_net`, `supabase_vault` (schema `vault`). Lưu ý: extension Vault trên Supabase tên là `supabase_vault`, không phải `vault`; đã ghi comment trong file.
+- Vault secret: `vault.create_secret('__CRON_SECRET__', 'cron_secret', ...)` — **placeholder giữ nguyên trong file commit**, không có secret thật.
+- Wrapper `public.trigger_run_cycle()`:
+  - `security definer`, `search_path = ''`, đọc `vault.decrypted_secrets` theo tên `cron_secret`.
+  - Raise lỗi nếu secret trống hoặc vẫn là `__CRON_SECRET__`.
+  - `net.http_post` tới `.../functions/v1/run-cycle`, header `x-cron-secret`, `timeout_milliseconds := 120000` (run-cycle chấm 200 item có thể >5s mặc định).
+  - `revoke all ... from public`, chỉ `grant execute ... to postgres`.
+- Job: `cron.schedule('run-cycle-2h', '0 */2 * * *', $$select public.trigger_run_cycle()$$)` — command **không chứa secret**.
+- Cuối file có hướng dẫn từng khối cho Phong + câu verify.
+
+**CRON_SECRET:**
+- Đã xác nhận tên `CRON_SECRET` tồn tại trong Supabase Edge Functions secrets (`supabase secrets list`), set từ task 2.0. Giá trị thật nằm trong `.env` local (không commit, không in ra).
+- Phong **không cần tạo secret mới**; chỉ thay `__CRON_SECRET__` trong file SQL bằng giá trị trong `.env` trước khi chạy. Nếu tạo mới thì phải `supabase secrets set CRON_SECRET=...` lại để function nhận đúng.
+
+**Chưa chạy SQL:** agent không có DB password/không chạy SQL Editor; theo yêu cầu, Phong chạy. Sau khi chạy cần verify:
+```
+select jobid, jobname, schedule, command, active from cron.job where jobname='run-cycle-2h';
+select public.trigger_run_cycle();
+select jobid, status, return_message, start_time from cron.job_run_details order by start_time desc limit 5;
+select id, status_code, content, created from net._http_response order by created desc limit 5;
+```
+`cron.job_run_details` chỉ chứng minh wrapper chạy không lỗi SQL; `net._http_response.status_code = 200` mới chứng minh HTTP tới run-cycle thành công.
+
+- Commit: cùng task 2.3 (migration + TASKS/WORKLOG/DECISIONS/HANDOFF).
