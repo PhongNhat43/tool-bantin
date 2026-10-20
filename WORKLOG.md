@@ -669,3 +669,28 @@ NEXT_PUBLIC_BASE_PATH=/tool-bantin npm run build
 Thứ tự sạch nhất: **secrets → Pages source → Supabase redirect → push `main` → workflow tự chạy**
 (push có đổi `dashboard/**` nên trigger khớp). Nếu đã push trước: làm 3 thiết lập rồi **Re-run all jobs**.
 Chi tiết ở HANDOFF mục “3.4 — Phong cần làm”.
+
+## 2026-10-20 — Task 3.4 hoàn tất: dashboard lên GitHub Pages
+
+**Kết quả:** production live tại **https://phongnhat43.github.io/tool-bantin/** — Phong đã đăng nhập
+magic link và xem Feed thật OK.
+
+**Đã làm**
+- Workflow `.github/workflows/deploy-dashboard.yml`: push `main` đổi `dashboard/**` hoặc
+  `workflow_dispatch` → Node 20 + cache npm → `npm ci` → `npm run build` với 2 secret public
+  (`NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`) → `upload-pages-artifact`
+  (`dashboard/out`) → `deploy-pages`; environment `github-pages`; `basePath` theo tên repo.
+- Phong cấu hình: 2 Repository secrets, Pages source = GitHub Actions, Supabase redirect URL
+  `https://phongnhat43.github.io/tool-bantin/auth/callback/`, push `main`.
+- Test local trước đó: `npm ci` + build production + serve `out/` sau basePath → Feed 3 khối,
+  `/nguon` 6 nguồn; `actionlint` pass; bundle không có service_role.
+
+**Sự cố production + cách sửa**
+1. Deploy đầu: trang báo “This page couldn't load”, console `Invalid supabaseUrl`.
+   Bundle có anon key nhưng **không có** `*.supabase.co` → build thiếu secret URL.
+2. Cập nhật secret lần 2 vẫn lỗi. Bundle gọi `new sl("eyJ…","https://….supabase.co",{auth…})`
+   → **2 secret bị hoán đổi** (anon key nằm ở URL, URL nằm ở key). Sửa đúng
+   `NEXT_PUBLIC_SUPABASE_URL = https://gkyneqfagcqgliwtxyfs.supabase.co`,
+   `NEXT_PUBLIC_SUPABASE_ANON_KEY = eyJ…`, Re-run all jobs → trang load, login + Feed OK.
+
+**Commit:** workflow `8c5d3ad`; docs 3.4 `48f2bbd`, `e5e3812`, `fa3d1f2`, `0c41dab` + commit hoàn tất 3.4.

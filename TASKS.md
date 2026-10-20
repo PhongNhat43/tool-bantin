@@ -34,9 +34,11 @@
 - [x] 3.2 Trang Feed đúng demo: 3 khối (Cần xem ngay ≥70 / Hôm nay 40–69 / Tất cả + search + filter nguồn), hàng ngang kiểu Feedly (ô score vuông bo góc trái + tiêu đề/meta phải), bấm expand hiện mô tả + breakdown điểm + link gốc; theme light mặc định + toggle dark; nút "Chạy ngay" gọi run-cycle qua RPC (20/10, ec8817f)
   - ⚠️ Cần Phong chạy `supabase/migrations/20261021_rpc_grant.sql` trong SQL Editor (agent đã apply để test E2E, chạy lại vô hại) — nếu chưa có, nút "Chạy ngay" báo "chưa có RPC" còn Feed vẫn chạy bình thường
 - [x] 3.3 Trang Nguồn: danh sách + toggle bật/tắt + form thêm nguồn (field động theo loại) — đúng yêu cầu "thêm tay nguồn mới" (20/10, 7c8f888 — migration `20261021_sources_write.sql` policy INSERT/UPDATE; form github/hn/rss validate client; facebook chỉ hiển thị; **chờ Phong chạy lại migration trong SQL Editor**, agent đã apply nên toggle/form chạy được)
-- [ ] 3.4 Deploy **GitHub Pages** + env production (`NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` qua GitHub Actions secrets), thêm redirect URL production vào Supabase Auth, kiểm tra đăng nhập + RLS trên production (20/10, 8c5d3ad — workflow `.github/workflows/deploy-dashboard.yml` đã viết + build production test local; **chờ Phong làm theo HANDOFF (secrets → Pages → redirect → push → chạy workflow)**)
+- [x] 3.4 Deploy **GitHub Pages** + env production (`NEXT_PUBLIC_SUPABASE_URL`/`ANON_KEY` qua GitHub Actions secrets), thêm redirect URL production vào Supabase Auth, kiểm tra đăng nhập + RLS trên production (20/10, 8c5d3ad — workflow `.github/workflows/deploy-dashboard.yml`; **production live 20/10: https://phongnhat43.github.io/tool-bantin/ — đăng nhập magic link + xem Feed OK**)
   - Workflow: push `main` đổi `dashboard/**` hoặc `workflow_dispatch` → build static export → upload artifact → deploy Pages (environment `github-pages`).
-  - Tiêu chí xong Phase 3: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa; production đăng nhập được
+  - Production config: 2 Repository secrets (URL + anon key), Pages source = GitHub Actions, redirect URL `https://phongnhat43.github.io/tool-bantin/auth/callback/` đã thêm ở Supabase Auth.
+  - Sự cố đã gặp + cách sửa: xem HANDOFF mục “3.4 — Production đã deploy” (thiếu URL secret / hoán đổi 2 secret).
+  - Tiêu chí xong Phase 3: mở web là thấy tin, đúng phong cách Feedly tối giản trong demo, không card nặng/shadow/chart thừa; production đăng nhập được — **đạt**.
 
 ## Phase 4 — Khai thác & tương tác (AI layer) — ý tưởng chốt 19/10/2026, làm sau khi Phase 1–3 vận hành trơn
 Mục đích: biến thông tin thành hành động — không để tin nằm chết trong dashboard.
