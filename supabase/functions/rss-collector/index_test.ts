@@ -3,9 +3,14 @@
  *
  * Chạy: deno test --allow-net --allow-env --allow-read supabase/functions/rss-collector/
  *
- * Cách làm (theo DECISIONS #17): mock `globalThis.fetch` CHỈ với domain
- * `fake.test`; mọi call tới Supabase vẫn đi mạng thật. Nhờ vậy test được đúng
- * logic retry/404/410/429/XML hỏng mà không phải cố ép lỗi thật.
+ * Cách làm (theo DECISIONS #17): mock `globalThis.fetch` cho domain `fake.test`
+ * và URL feed Simon (`testdata/feed.xml`) — KHÔNG gọi mạng tới RSS thật.
+ * Mọi call tới Supabase vẫn đi mạng thật. Nhờ vậy test được đúng logic
+ * retry/404/410/429/XML hỏng mà không phải cố ép lỗi thật.
+ *
+ * Fixture Simon là bản XML thật tải ngày 20/10/2026 (entry mới nhất
+ * 2026-10-19T23:58:25Z). Checkpoint source thật đang đúng mốc này nên
+ * collector không chèn thêm item / không đổi checkpoint — test tất định.
  *
  * ⚠️ Test này GHI THẬT vào DB: tạo 6 row `sources` tên bắt đầu bằng "[TEST] "
  * rồi xoá ở bước cuối (item xoá theo cascade). Cần `SUPABASE_URL` và
@@ -28,6 +33,12 @@ const HEADERS = {
 };
 
 const realFetch = globalThis.fetch;
+
+/** Feed Simon thật — mock bằng fixture để test không phụ thuộc mạng/nội dung mới. */
+const SIMON_FEED_URL = "https://simonwillison.net/atom/everything/";
+const SIMON_FIXTURE = await Deno.readTextFile(
+  new URL("./testdata/feed.xml", import.meta.url),
+);
 
 const VALID_ATOM = `<?xml version="1.0" encoding="utf-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
@@ -90,6 +101,7 @@ Deno.test("rss-collector: retry, feed chết, cô lập lỗi, lọc theo checkp
   // Số lần gọi fetch theo từng URL giả — chứng minh retry có/không có.
   const calls: Record<string, number> = {};
   const bump = (path: string): number => (calls[path] = (calls[path] ?? 0) + 1);
+  let simonCalls = 0;
 
   const ids: string[] = [];
   let sourceSimon = "";
@@ -117,9 +129,20 @@ Deno.test("rss-collector: retry, feed chết, cô lập lỗi, lọc theo checkp
       simonLastSeenBefore = rows[0].config?.last_seen ?? "";
     });
 
-    // Cài mock CHỈ cho domain fake.test.
+    // Cài mock cho domain fake.test + feed Simon (fixture); Supabase vẫn thật.
     globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) => {
       const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+
+      if (url === SIMON_FEED_URL) {
+        simonCalls++;
+        return Promise.resolve(
+          new Response(SIMON_FIXTURE, {
+            status: 200,
+            headers: { "Content-Type": "application/atom+xml; charset=utf-8" },
+          }),
+        );
+      }
+
       if (!url.startsWith("https://fake.test/")) return realFetch(input, init);
 
       const path = url.slice("https://fake.test/".length);
@@ -205,7 +228,8 @@ Deno.test("rss-collector: retry, feed chết, cô lập lỗi, lọc theo checkp
       eq(s.config.url, "https://fake.test/flaky-500"); // giữ nguyên field khác
     });
 
-    await t.step("source thật không bị đụng tới", async () => {
+    await t.step("source thật không bị đụng tới (feed Simon trả fixture, không gọi mạng)", async () => {
+      eq(simonCalls, 1); // đã lấy đúng feed Simon từ fixture
       const s = await readSource(sourceSimon);
       eq(s.config.last_seen ?? "", simonLastSeenBefore);
       eq(s.enabled, true);

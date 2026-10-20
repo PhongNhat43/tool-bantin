@@ -299,3 +299,23 @@ deno test --env-file=.env --allow-net --allow-env --allow-read supabase/function
 - Tiêu chí "tin ≥70 trong 88 tin hiện có → Telegram" không đạt bằng dữ liệu thật: 2 tin 70 điểm đều >48h nên theo DECISIONS #44 không báo. Đã xác nhận nhánh instant bằng 1 item test rồi xoá (xem trên); digest thật 4 tin vẫn đã vào group.
 - `INGEST_SECRET` trong `.env` local **không khớp** secret đang deploy (POST thử trả 401), trong khi Merlin vẫn bắn được → secret production khác. Không đổi secret production; test instant gọi trực tiếp `ingestFacebook`.
 - Test RSS "source thật không bị đụng tới" flaky khi feed Simon có bài mới: lần đầu checkpoint tiến → fail, chạy lại pass. Chưa sửa (ngoài scope 2.0), cần ghi nhận để xử lý sau.
+
+## 2026-10-20 — Task 2.0b: fix test RSS flaky bằng fixture
+
+**Vấn đề:** test `rss-collector` chạy `runCollector()` trên toàn bộ source thật, nên đọc feed Simon Willison qua mạng. Khi feed có bài mới, checkpoint tiến → bước "source thật không bị đụng tới" fail lần đầu; chạy lại mới pass.
+
+**Đã làm:**
+- Tải bản XML thật của `https://simonwillison.net/atom/everything/` → `supabase/functions/rss-collector/testdata/feed.xml` (102.102 bytes, 30 entry, entry mới nhất `2026-10-19T23:58:25Z` — đúng mốc checkpoint hiện tại của source thật).
+- `index_test.ts`: mock `globalThis.fetch` cho đúng URL feed Simon, trả fixture; chỉ các call `fake.test` và feed Simon bị chặn, call Supabase vẫn đi mạng thật. Thêm biến đếm `simonCalls` và assert `=1` để chứng minh fixture được dùng.
+- **Không sửa `collector.ts`** — giữ nguyên logic collector.
+
+**Kết quả:**
+```
+deno test --env-file=.env --allow-net --allow-env --allow-read supabase/functions/rss-collector/index_test.ts
+  → 1 passed (6 steps) | 0 failed
+Chạy lặp 10 lần liên tiếp:
+  run 1..10: PASS
+  → 10/10 pass, 0 fail
+```
+- Test vẫn ghi DB thật (tạo/xoá 6 source `[TEST] ...`), chỉ mạng RSS được mock.
+- Commit: cùng task 2.0b (test + fixture + TASKS/WORKLOG).

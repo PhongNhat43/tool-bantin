@@ -1,0 +1,555 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xml:lang="en-us" xmlns="http://www.w3.org/2005/Atom"><title>Simon Willison's Weblog</title><link href="http://simonwillison.net/" rel="alternate"/><link href="http://simonwillison.net/atom/everything/" rel="self"/><id>http://simonwillison.net/</id><updated>2026-10-19T23:58:25+00:00</updated><author><name>Simon Willison</name></author><entry><title>My obituary for programming</title><link href="https://simonwillison.net/2026/Oct/19/my-obituary-for-programming/" rel="alternate"/><published>2026-10-19T23:58:25+00:00</published><updated>2026-10-19T23:58:25+00:00</updated><id>https://simonwillison.net/2026/Oct/19/my-obituary-for-programming/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://dumbmatter.com/2026/10/programming-obituary/"&gt;My obituary for programming&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+Jeremy Scheff poignantly captures the key loss caused by coding agents for career programmers who enjoyed the &lt;em&gt;puzzle&lt;/em&gt; of developing code:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Programming turned into one of the greatest jobs you could imagine. You got paid to work on tricky little logic puzzles. The trickier the puzzle, the more you got paid. But even pretty simple puzzles were worth a lot of money because regular people just couldn't do it! No, they needed us. They would give us a problem and we would solve it the way we wanted. We set the strategy, we made the timeline, we defined what was and was not possible.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;If you're a programmer who thrives on building working systems and doesn't care too deeply about the problems solved along the way, LLMs are the gift that keeps on giving.&lt;/p&gt;
+&lt;p&gt;If directly solving those problems was a big part of your enjoyment, the loss is very real.
+
+    &lt;p&gt;&lt;small&gt;&lt;/small&gt;Via &lt;a href="https://lobste.rs/s/wtobpt/my_obituary_for_programming"&gt;lobste.rs&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/programming"&gt;programming&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/careers"&gt;careers&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/coding-agents"&gt;coding-agents&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/deep-blue"&gt;deep-blue&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="programming"/><category term="careers"/><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="coding-agents"/><category term="deep-blue"/></entry><entry><title>llm-tools-datasette 0.1.1</title><link href="https://simonwillison.net/2026/Oct/18/llm-tools-datasette/" rel="alternate"/><published>2026-10-18T23:43:09+00:00</published><updated>2026-10-18T23:43:09+00:00</updated><id>https://simonwillison.net/2026/Oct/18/llm-tools-datasette/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/llm-tools-datasette/releases/tag/0.1.1"&gt;llm-tools-datasette 0.1.1&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;When I switched LLM over to &lt;a href="https://github.com/pydantic/httpx2"&gt;httpx2&lt;/a&gt; in &lt;a href="https://llm.datasette.io/en/stable/changelog.html#v0-33"&gt;LLM 0.33&lt;/a&gt; I forget that this would break any plugins which used &lt;code&gt;httpx&lt;/code&gt; without directly depending on it. &lt;code&gt;llm-tools-datasette&lt;/code&gt; was one of those plugins, now fixed.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/datasette"&gt;datasette&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llm"&gt;llm&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="datasette"/><category term="llm"/></entry><entry><title>llm-echo 0.5</title><link href="https://simonwillison.net/2026/Oct/18/llm-echo/" rel="alternate"/><published>2026-10-18T23:16:16+00:00</published><updated>2026-10-18T23:16:16+00:00</updated><id>https://simonwillison.net/2026/Oct/18/llm-echo/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/llm-echo/releases/tag/0.5"&gt;llm-echo 0.5&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;I'm working towards a new &lt;a href="https://llm.datasette.io/"&gt;LLM&lt;/a&gt; release, and testing PRs caused me to revisit the &lt;code&gt;llm-echo&lt;/code&gt; debug plugin. This plugin provides a "model" which doesn't involve an LLM at all - it just repeats back the prompts that have been fed to it. The new release now updates the simulated token usage counts to take tool calls, system prompts, and reasoning tokens into account.&lt;/p&gt;
+&lt;p&gt;Example usage:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;uvx --with llm-echo llm -m echo 'hi there' -o thinking 1 --usage
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;Outputs:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;First I consider the prompt, then I decide what to say.
+{
+  "prompt": "hi there",
+  "system": "",
+  "attachments": [],
+  "stream": true,
+  "previous": []
+}
+Token usage: 2 input, 24 output
+&lt;/code&gt;&lt;/pre&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/llm"&gt;llm&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="llm"/></entry><entry><title>Inline rendering with document​.currentScript</title><link href="https://simonwillison.net/2026/Oct/17/document-currentscript/" rel="alternate"/><published>2026-10-17T21:11:12+00:00</published><updated>2026-10-17T21:11:12+00:00</updated><id>https://simonwillison.net/2026/Oct/17/document-currentscript/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://leanrada.com/notes/inline-rendering-currentscript/"&gt;Inline rendering with document​.currentScript&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+Lean Rada describes a neat trick that takes advantage of the &lt;a href="https://developer.mozilla.org/en-US/docs/Web/API/Document/currentScript"&gt;document.currentScript&lt;/a&gt; property. You can use that to drop in a tiny inline &lt;code&gt;&amp;lt;script&amp;gt;&lt;/code&gt; element that replaces itself when the page loads:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;The year is &amp;lt;script&amp;gt;
+document.currentScript.replaceWith(
+  new Date().getFullYear())&amp;lt;/script&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;If you define a shortcut function like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;$=(...n)=&amp;gt;document.currentScript.replaceWith(...n)
+&lt;/code&gt;&lt;/pre&gt;
+&lt;p&gt;You get a tiny template language:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;The year is &amp;lt;script&amp;gt;$(new Date().getFullYear())&amp;lt;/script&amp;gt;
+&lt;/code&gt;&lt;/pre&gt;
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/javascript"&gt;javascript&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="javascript"/></entry><entry><title>web-edit 0.1a2</title><link href="https://simonwillison.net/2026/Oct/17/web-edit/" rel="alternate"/><published>2026-10-17T13:16:49+00:00</published><updated>2026-10-17T13:16:49+00:00</updated><id>https://simonwillison.net/2026/Oct/17/web-edit/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/web-edit/releases/tag/0.1a2"&gt;web-edit 0.1a2&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;web-edit (&lt;a href="https://simonwillison.net/2026/Oct/12/web-edit/"&gt;previously&lt;/a&gt;) is my tiny web app for browsing and editing files in a folder. I mainly built it for editing files on different machines via Tailscale.&lt;/p&gt;
+&lt;p&gt;I added a "copy to clipboard" option for both text and image data. I needed this because I was running pelican prompts on a laptop from my phone (here's &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https%3A%2F%2Fgist.github.com%2Fsimonw%2Fb1cec9726b6aa62d4de47100f90f0c1a"&gt;DeepSeek 4.1 Flash 1017&lt;/a&gt;) and I wanted an easy way to copy the resulting logs into a Gist.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/projects"&gt;projects&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/pelican-riding-a-bicycle"&gt;pelican-riding-a-bicycle&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/deepseek"&gt;deepseek&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="projects"/><category term="pelican-riding-a-bicycle"/><category term="deepseek"/></entry><entry><title>Quoting Addy Osmani, Morgan Westlee Lunt, and Qing Wang</title><link href="https://simonwillison.net/2026/Oct/16/code-review/" rel="alternate"/><published>2026-10-16T22:06:37+00:00</published><updated>2026-10-16T22:06:37+00:00</updated><id>https://simonwillison.net/2026/Oct/16/code-review/</id><summary type="html">
+    &lt;blockquote cite="https://claude.dev/blog/solving-code-review-at-anthropic/"&gt;&lt;p&gt;We think "did a human read the code?" is an imprecise proxy for "what could go wrong with this change, and which check—automated or human—is the right one to catch it?"&lt;/p&gt;
+&lt;p&gt;Asking that question also changed &lt;em&gt;when&lt;/em&gt; review happens. Before, review was a gate at the end of the road: write the code, open a PR, wait for your colleague.&lt;/p&gt;
+&lt;p&gt;Now, review runs continuously, more like spellcheck while you write. Most changes have been reviewed and fixed by Claude at least once before a human is asked to look. This catches most routine mistakes, and saves team attention for higher-level questions and scrutiny.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://claude.dev/blog/solving-code-review-at-anthropic/"&gt;Addy Osmani, Morgan Westlee Lunt, and Qing Wang&lt;/a&gt;, How the Claude Code team does code review&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/anthropic"&gt;anthropic&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/claude"&gt;claude&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/claude-code"&gt;claude-code&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/addy-osmani"&gt;addy-osmani&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/coding-agents"&gt;coding-agents&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/agentic-engineering"&gt;agentic-engineering&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/code-review"&gt;code-review&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="anthropic"/><category term="claude"/><category term="ai"/><category term="claude-code"/><category term="llms"/><category term="addy-osmani"/><category term="coding-agents"/><category term="generative-ai"/><category term="agentic-engineering"/><category term="code-review"/></entry><entry><title>Chirp Pong</title><link href="https://simonwillison.net/2026/Oct/15/chirp-pong/" rel="alternate"/><published>2026-10-15T19:47:52+00:00</published><updated>2026-10-15T19:47:52+00:00</updated><id>https://simonwillison.net/2026/Oct/15/chirp-pong/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Tool:&lt;/strong&gt; &lt;a href="https://tools.simonwillison.net/chirp-pong"&gt;Chirp Pong&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Another game experiment - I wanted to see if it was feasible to have a two player game on two separate phones running in static HTML where the networking code uses chirps sent via the microphone. It seems to work!&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Build a two player competitive pong like game where two players use their phones close to each other and the game state is sent via audio noises which the web microphone API can interpret - but add graphical and gameplay twists to make it a lot more fun and intertwine than pong&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Claude Opus 5.5 Extra &lt;a href="https://claude.ai/code/session_019awUnNB7NoYd7noBNAsNdd"&gt;in Claude Code&lt;/a&gt;.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/game-design"&gt;game-design&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/claude-code"&gt;claude-code&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="game-design"/><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="claude-code"/></entry><entry><title>Anthropic tells investors quarterly revenue up nearly 50% to $16.8bn ahead of IPO</title><link href="https://simonwillison.net/2026/Oct/15/anthropic-tells-investors/" rel="alternate"/><published>2026-10-15T13:04:03+00:00</published><updated>2026-10-15T13:04:03+00:00</updated><id>https://simonwillison.net/2026/Oct/15/anthropic-tells-investors/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://www.ft.com/content/11632d03-358c-454b-af95-d06d4072932b?syn-25a6b1a6=1"&gt;Anthropic tells investors quarterly revenue up nearly 50% to $16.8bn ahead of IPO&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+The phrase "told investors" appears four times in this FT article, which reports on Anthropic's day of hosting investors on Wednesday. Lots of details in here from "&lt;a href="https://simonwillison.net/2023/Nov/22/deciphering-clues/#hints-to-look-out-for"&gt;people with knowledge of the matter&lt;/a&gt;".&lt;/p&gt;
+&lt;p&gt;Key things I learned from the article:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Q1 revenue (Jan/Feb/Mar) was "about $4.8bn"&lt;/li&gt;
+&lt;li&gt;Q2 (Apr/May/Jun) was $11.5bn&lt;/li&gt;
+&lt;li&gt;Q3 (Jul/Aug/Sep) was $16.8bn&lt;/li&gt;
+&lt;li&gt;In Q3: $1.70 in revenue for every $1 spent on "computing power"&lt;/li&gt;
+&lt;li&gt;Adjusted operating margins (excluding stock-based compensation) were 11%&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;This point about distillation is worth quoting in full (highlight mine):&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The start-up has also clamped down on “distillation” — a controversial practice whereby rival AI labs train their models on the outputs of more advanced ones.&lt;/p&gt;
+&lt;p&gt;When rival companies “distil” their models from Anthropic’s models, that involves heavy usage and spending.&lt;/p&gt;
+&lt;p&gt;Anthropic told investors on Wednesday &lt;strong&gt;distillation accounted for 5 per cent to 7 per cent of revenue&lt;/strong&gt; and that they had cut it back “materially” in the third quarter of the year, said four people with direct knowledge of the matter.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Napkin maths says that if distillation was 5% of their Q2 revenue (before they cut it back in Q3) then unnamed "other labs" spent over half a billion dollars distilling Anthropic's models in that quarter!&lt;/p&gt;
+&lt;p&gt;Also notable: Anthropic appear to no longer be leaning on "annualized run-rate revenue" (&lt;a href="https://simonwillison.net/2026/May/29/anthropic/"&gt;previously&lt;/a&gt;) in these communications to their investors.
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/anthropic"&gt;anthropic&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="anthropic"/></entry><entry><title>LaTeX renderer</title><link href="https://simonwillison.net/2026/Oct/15/latex/" rel="alternate"/><published>2026-10-15T02:07:28+00:00</published><updated>2026-10-15T02:07:28+00:00</updated><id>https://simonwillison.net/2026/Oct/15/latex/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Tool:&lt;/strong&gt; &lt;a href="https://tools.simonwillison.net/latex"&gt;LaTeX renderer&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Inspired by Paul Ford and Aboard Foundary's new web app &lt;a href="https://tinylittleoffice.com/"&gt;Tiny Little Office&lt;/a&gt;, which provides a suite of web app content editors (a Word Processor, Outliner, Presentation Builder, Spreadsheet, Calculator, Drawing Tool, Diagram Maker, Animator, Calendar, and Trip Planner).&lt;/p&gt;
+&lt;p&gt;Tiny Little Office's signature trick is to store all of the document data in the &lt;code&gt;#fragment&lt;/code&gt; section of the URL, so every document created using it becomes a bookmarkable and shareable link.&lt;/p&gt;
+&lt;p&gt;It also has &lt;a href="https://tinylittleoffice.com/llms.txt"&gt;an llms.txt file&lt;/a&gt; telling agents how to construct URLs that will render as documents. Claude &lt;a href="https://claude.ai/share/239301ff-edde-420e-b433-b9c16fe40a6c"&gt;used that file&lt;/a&gt; to generate &lt;a href="https://tinylittleoffice.com/#/v1/deck/zXVVdb9tGEHznr1hED2kBSbZcO4UFtIHTuCgQtylstwH6Uq7Io3gRdcfeHS1T_fjtnV1Ssp038r52d2Z2djabZcmmxizpJ78jpnvrerqxCUv0sapsYaixbkM7HzYxS7XZ4ujWls6u65SlwC7aZL1bUmxsabIZHpxMaCmXlnRfG9rVHm~Vvui2xiWykfDK8Ojfc439b5bN6BdP0YQHE6bkPJWceMXR6A8Xhe9cwqFr7Peptm5NXCUT9Kl8klNM3EeyjnrfBVoFv8Nj2TGbaDgU9ZKuHCe_7clXKFVSkMh5Qs2Nluy14nnhtyeTk4fFSWmKzUn_7e~f5_N5LkcfFvlSg1Y~bDkR8omoXrbkLDZ3tS1q4rYl3xqHnCTvvB~vbX2J2k1C7rI8vjzsHSCaEuK3wcRoSmJXknEFrpVZ9r0CWgVeK5QDBBOB1BlkAgCxmry~dgAz~hePj0i1wT5wMnIY_Ohl0FQ~cTN_Aq~yIo~7ZFpaoL5gcc8iOg6bx5QdaHlB8f3Nxykg_pnDpvQ7Rw8cLCuFdyKTSLEF4uQd5QiTS0gTsftDzSHFKZWBd2A5av3sLLAGzPgNqB94AJlV44uN3LmvEVDQl8C88l2iBX14JyS3DUMTY5pjOS0XG14fKjqDcP_qjNlLTVLLLe_o_fWPN1f319MBSN4a4mbtUXi9lbL3ttW81vgQFvcgcIg0XjwwPv7SDjeBhnBqEpW2kGI49HIu4Bw0fqAcGwRdcdMc6O6fXdAKAcBurA9dWSrYR_AjddGIuH1ayqNbvHft1o2N9RTqc5IIUi~5J4fCAHVEXC5jbZBa1TkNheUjdbF3iR_ndGtaw3i_9RYcr1jwdtAPaLQuJrwhGa2MNGdsTdOAI3DxTEii4hH2b2AivFEd_XZ7M4tcGQH_XZ~gjZVB4oak_9~cd6FZ0htaWQkNmRZQCBdj_1zN_iCe7el0dpkLWZDTf7kWmP~p_Yq_YMBNYQZpd7HjBprLp8OpmViHbRpSDKiCDNWLBo9xxpQatQCyM21DLD8rSNQ6uBwKtgU71eGUVj1Fu0dJeZ4rsnplPL7ioL93CTKkf4aiMyFRhIqFi_PLs~y9qRp0aDmIp8fy4vzsIrsR32y5bzzwxtrl6UKCiFgu5hejLNSKozTg2EdjGz11EioV2kYXpM6VgPZsenp6~gSwaKP2IcF_fLeuxfKgoJjkRBKHi8~43Zh~SZ_qXgyYAMTrpJAKwQDD9ErvJ5Qi7amGdBT1lGpuKl1cKf~DwhDDDTxoj3N6HeFVvfSR9pp1ChBVbJs4oPSqtLA3uAN8zWMjqExfaZshma~~zqVmbWqYGN7j1s4_q3l4MSXG7BunwnFwpCQ~tKTrRwy7KI4l940rdXS8BUK7fLR6HlxI29ylIfH8bZkfJ4HYrSRyGBfztk2PJzIBSFpNOI2jtaLLYbs4~KsWK~MGpgAz10G8pHyYTRP0_Xc5EOm~0CmE89L2ihrnoVUxkfRi8sJzHYTonVE_Ua0cR3Shm1H9CXPLNP2XjovGNI3M0_1smG4C4P8"&gt;this link to a deck&lt;/a&gt; that explains how the URL format works:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Screenshot of a slide deck editor in a web app with a dark-themed presentation open. The document title field reads &amp;quot;How a Tiny Little Office link works&amp;quot;, with a progress ring, share icon and menu icon at top right. Below is a formatting toolbar with an &amp;quot;Insert&amp;quot; dropdown followed by icon buttons for play, bold, italic, underline, strikethrough, highlight, code, link, superscript, emoji, outdent, indent, layout and color palette. The main canvas shows slide 1 with a blue chain-link icon and the text: &amp;quot;The whole document is the link&amp;quot; &amp;quot;No server, no database, no account&amp;quot; &amp;quot;Everything after the # stays in your browser&amp;quot; and a slide counter &amp;quot;1 / 9&amp;quot;. Below the canvas is a &amp;quot;SPEAKER NOTES&amp;quot; heading. A sidebar on the right shows slide thumbnails. Slide 1 (selected): &amp;quot;The whole document is the link&amp;quot; &amp;quot;No server, no database, no account&amp;quot; &amp;quot;Everything after the # stays in your browser&amp;quot;. Slide 2: &amp;quot;Anatomy of a link&amp;quot; with bullets &amp;quot;tinylittleoffice.com/#/v1/deck/y7Vj...&amp;quot; &amp;quot;v1: the format version&amp;quot; &amp;quot;deck: which app opens it&amp;quot; &amp;quot;y: the mode letter&amp;quot; &amp;quot;7Vj...: the document, compressed and encoded&amp;quot;. Slide 3: &amp;quot;Step 1: write it as text&amp;quot; with bullets &amp;quot;Every document is TLO, a Markdown variant&amp;quot; &amp;quot;Slides split on --- lines&amp;quot; &amp;quot;Charts, drawings and animations are fenced blocks&amp;quot; &amp;quot;This deck is about 1 KB of plain text&amp;quot;. Slide 4: &amp;quot;Step 2: squeeze it&amp;quot; with bullets &amp;quot;Raw DEFLATE, the same algorithm as zip and gzip&amp;quot; &amp;quot;z: plain DEFLATE&amp;quot; &amp;quot;y: DEFLATE with a preset dictionary&amp;quot; &amp;quot;r: no compression at all&amp;quot;." src="https://static.simonwillison.net/static/2026/tiny-little-office.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;Tiny Little Office inspired me &lt;a href="https://claude.ai/code/session_017KJrPqqWVHLqr4E7TLPnpt"&gt;to have Claude Code&lt;/a&gt; (Opus 5.5 Extra) build a similar tool that works with LaTeX. Here's the sequence of prompts I used:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;I want a tool where you can link to it with a fragment hash #code-here and it treats that code as LaTeX and renders it really effectively. It should also support a prefix which means the latex is compressed with a custom compression dictionary optimized for latex. Use the best available latex render library from a CDN (consider WebAssembly too). If loaded without a fragment hash show an editor you can paste latex into and then toggle to a "rendered" view. That rendered view should be bookmarkable. The #fragment view should let you switch to edit source too.&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Since it was working in &lt;a href="https://github.com/simonw/tools"&gt;my tools repo&lt;/a&gt; I told it to take inspiration from the &lt;code&gt;&amp;lt;iframe sandbox="..."&amp;gt;&lt;/code&gt; mechanism used by my existing &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer"&gt;SVG in Markdown tool&lt;/a&gt; as protection against XSS risks:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Safe from XSS? We could run in an iframe sandbox like we do on the SVG markdown render project&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;I had it copy the Gist/URL loading feature from that tool as well:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;We should have an option to load latex from a URL (or gist) similar to the markdown SVG tool&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Here's &lt;a href="https://tools.simonwillison.net/latex#~1jZq9DoIwEIB3nuKGbigJJS5svoAOMJuQ4EBEJWJjGHh3765A_8DIQtJfIMdR-n0uCV9l4DOs_p8ua3ZZKK2anOsaTqya9AZnHhMo3qqewKWPMh2SOQOFkhSJtmruY1QungBJFk-cQLsspAF8qgFPWKQ6FmdYdCB7oseX5HVNfgE-HGmM2OPATDfAlCssyLcLGI4BONwZ7E8pby5KWoilFBK0n5T4lMeHgQaMMsYjS6hrG61G4Micmcj2EN48tyVgHpzNKMBEHuxEbV0dZhsJwZB7_Lux0mR4YDc9HTd1bnGaki0V1nr6kGHSI8NAwCWaVjeAPyYUNAYxUZt8k2aKlODPRQq7JIYMS-VKaQwHrMmoxqWeLlT6Ag"&gt;an example link&lt;/a&gt;. The tool uses &lt;a href="https://github.com/nodeca/pako"&gt;Pako 2.1.0&lt;/a&gt;, &lt;a href="https://github.com/mathjax/MathJax"&gt;MathJax 4.1.3&lt;/a&gt;, &lt;a href="https://github.com/arena-ai/faster-latex"&gt;faster-latex 0.3.1&lt;/a&gt;, and &lt;a href="https://github.com/cure53/DOMPurify"&gt;DOMPurify 3.4.16&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Screenshot of a web app titled &amp;quot;LaTeX renderer&amp;quot; with a split-pane layout. The top bar has an Edit/Rendered toggle, a blue Copy link button, and a Share button. The left pane, labeled LaTeX source with a &amp;quot;Document · faster-latex (WASM)&amp;quot; badge, has a URL/GitHub Gist input with a Load button, a code editor containing a LaTeX document, and rows of example buttons (Quadratic formula, Gaussian integral, Maxwell, Attention, Matrix, Chemistry, Prose, TikZ, Document). The right pane shows the typeset output: a paper titled &amp;quot;Sums of Odd Numbers&amp;quot; by A. Student, with a section stating a theorem that the first n odd numbers sum to n squared, a Proof section with numbered equations, and a bulleted list of small cases." src="https://static.simonwillison.net/static/2026/latex-tool.webp" /&gt;&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/latex"&gt;latex&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/paul-ford"&gt;paul-ford&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/tools"&gt;tools&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/urls"&gt;urls&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="latex"/><category term="paul-ford"/><category term="tools"/><category term="urls"/><category term="ai"/><category term="generative-ai"/><category term="llms"/></entry><entry><title>Tree Appreciator</title><link href="https://simonwillison.net/2026/Oct/14/tree-appreciator/" rel="alternate"/><published>2026-10-14T21:23:01+00:00</published><updated>2026-10-14T21:23:01+00:00</updated><id>https://simonwillison.net/2026/Oct/14/tree-appreciator/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Tool:&lt;/strong&gt; &lt;a href="https://tools.simonwillison.net/tree-appreciator"&gt;Tree Appreciator&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Another game experiment with Claude. This one used the default Claude iPhone app (chat mode, not Claude Code mode), where I prompted Claude Opus 5.5 Max with:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Build a three js game called "Tree appreciator" - it shows you two algorithmically generated trees and the game mechanics is about appreciating the differences between them. Think hard about how to make sure it is both fun and beautiful.&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Somewhat embarrassingly given &lt;a href="https://simonwillison.net/2026/Sep/27/2026-in-llms-so-far/#simon-willison-2026-in-llms.059.webp"&gt;my recent talk&lt;/a&gt;, I've found that telling Opus 5.5 "make sure it is fun" works uncomfortably well. In this case Claude &lt;a href="https://claude.ai/share/ee7de555-f85c-4ff0-96cb-d51ed5e479e9"&gt;crunched for 3 hours and 7 minutes&lt;/a&gt; before retuning a cosy little spot-the-difference game with music and animation and achievements that's quite compelling to play.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Screenshot of a mobile spot-the-difference puzzle game with a dark interface. Header reads &amp;quot;No. 003 Acer autumnalis ‘Hid…&amp;quot; with subtitle &amp;quot;Autumn maple · A country lane in late a…&amp;quot; and icons for sound, a book, and help. Two nearly identical 3D-rendered scenes are stacked vertically, labeled &amp;quot;Fig. i&amp;quot; and &amp;quot;Fig. ii&amp;quot;, each showing a dark-trunked maple tree with red, orange and pale peach leaves, leaves falling through the air, a golden grassy field with a few small rocks, and hazy hills with pine silhouettes under a pale sky. Two differences are circled in blue in both images: circle &amp;quot;a&amp;quot; at the base of the trunk, where Fig. i has a small red mushroom that is missing in Fig. ii, and circle &amp;quot;b&amp;quot; in the right side of the canopy, where Fig. i has a patch of green leaves that are red in Fig. ii. The bottom bar shows &amp;quot;2 of 4&amp;quot;, a reset button, a &amp;quot;Hint&amp;quot; button with three filled and two empty dots, and a score of &amp;quot;1,803&amp;quot;." src="https://static.simonwillison.net/static/2026-10-14/image_crop_1320x2195_w1320_q0.7.webp" /&gt;&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/game-design"&gt;game-design&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/javascript"&gt;javascript&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/claude"&gt;claude&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/vibe-coding"&gt;vibe-coding&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/three-js"&gt;three-js&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="game-design"/><category term="javascript"/><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="claude"/><category term="vibe-coding"/><category term="three-js"/></entry><entry><title>AI is mass decompiling games. That's both awesome and scary.</title><link href="https://simonwillison.net/2026/Oct/14/ai-is-mass-decompiling-games/" rel="alternate"/><published>2026-10-14T16:26:53+00:00</published><updated>2026-10-14T16:26:53+00:00</updated><id>https://simonwillison.net/2026/Oct/14/ai-is-mass-decompiling-games/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://popcar.bearblog.dev/ai-is-mass-decompiling-games-thats-both-awesome-and-scary/"&gt;AI is mass decompiling games. That&amp;#x27;s both awesome and scary.&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+Indie game developer Popcar talks about the recent wave of AI-powered decompilation of existing games, enabling weird mashups between existing games, and producing a boom in game preservation projects to get old games working on new hardware (often in a browser using WebAssembly).&lt;/p&gt;
+&lt;p&gt;I like how this piece captures both the positives and the negatives of this new development:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Most people already realized the scary part by now. If AI can decompile games and software, then the entire tech industry is about to explode. Anybody can decompile other software and use it any way they'd like, and nobody can stop them. Companies can steal from competitors. Your paid game or app can be open-sourced against your will. This isn't exclusive to old video games, we can apply this to &lt;em&gt;any&lt;/em&gt; software. [...]&lt;/p&gt;
+&lt;p&gt;This is also a big win for preservation. Old games can be ported, modified, enhanced, and made much more easily accessible than before.  [...[&lt;/p&gt;
+&lt;p&gt;With console makers going all in on digital and games becoming entirely unplayable due to servers shutting down, this is &lt;em&gt;fantastic&lt;/em&gt; news. We could own software we bought regardless of what the company thinks.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+    &lt;p&gt;&lt;small&gt;&lt;/small&gt;Via &lt;a href="https://news.ycombinator.com/item?id=50088534"&gt;Hacker News&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/computer-history"&gt;computer-history&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/game-design"&gt;game-design&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/webassembly"&gt;webassembly&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai-ethics"&gt;ai-ethics&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/coding-agents"&gt;coding-agents&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="computer-history"/><category term="game-design"/><category term="ai"/><category term="webassembly"/><category term="generative-ai"/><category term="llms"/><category term="ai-ethics"/><category term="coding-agents"/></entry><entry><title>Redesigning source control at Anthropic</title><link href="https://simonwillison.net/2026/Oct/13/redesigning-source-control-at-anthropic/" rel="alternate"/><published>2026-10-13T23:00:06+00:00</published><updated>2026-10-13T23:00:06+00:00</updated><id>https://simonwillison.net/2026/Oct/13/redesigning-source-control-at-anthropic/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://www.anthropic.com/engineering/redesigning-source-control"&gt;Redesigning source control at Anthropic&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+Interesting piece from Anthropic describing why and how they built their own custom alternative to Git, based on the dramatic increase in rate of changes to their code after the past six months.&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;In May 2026, Anthropic averaged around 2,500 code changes merged per day; as of September, we merged over 30,000 per day.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;They included a chart showing those changes. I &lt;a href="https://claude.ai/share/aefcdd4a-9364-40c1-927a-29bf445894fc"&gt;had Claude modify their chart&lt;/a&gt; (&lt;a href="https://gist.github.com/simonw/4a16dff066fd9763faf8642f797905be"&gt;code here&lt;/a&gt;) to add markers for the public releases of each of their models in 2026:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Stacked bar chart titled “Changes merged per day”, for the Anthropic monorepo, January–September 2026. Each day’s bar is split into pull requests (blue) and antique change requests (orange), with a black line for the 7-day average. Weekdays start at around 1,000 merges in January and climb slowly to about 3,000 by late May. Antique change requests appear in late May, overtake pull requests in mid-June and have almost fully replaced them by mid-July, when weekdays reach 6,000–8,000. A labelled “Quiet week” at the end of July dips below 1,000 a day. After that, growth turns steep: over 10,000 a day by mid-August, about 17,000 in early September, and a peak of 30,401 on Sep 9. Dotted lines mark Claude model releases: Opus 4.6 (Feb 5), Sonnet 4.6 (Feb 17), Mythos Preview (Apr 7), Opus 4.7 (Apr 16), Opus 4.8 (May 28), Fable 5 and Mythos 5 (Jun 9), Sonnet 5 (Jun 30), Opus 5 (Jul 24, just before the quiet week), and Fable 5.1 and Mythos 5.1 (Sep 1)." src="https://static.simonwillison.net/static/2026/anthropic-merges-per-day.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;This shows public release dates, not the date when models became available for Anthropic's internal use. My guess is that the introduction of Fable/Mythos class models is a key factor in the increased coding velocity.&lt;/p&gt;
+&lt;p&gt;"Antique" is their new code review system. The source control system is called Scion, and sounds to me like a reinvention of centralized source control along the lines of Subversion.&lt;/p&gt;
+&lt;p&gt;(&lt;strong&gt;Update&lt;/strong&gt;: Anthropic credit Google's &lt;a href="https://en.wikipedia.org/wiki/Piper_(source_control_system)"&gt;Piper&lt;/a&gt; and Meta's &lt;a href="https://sapling-scm.com/"&gt;Sapling&lt;/a&gt; as "prior art" - it looks like the core concept of "derived data" &lt;a href="https://sunshowers.io/posts/anthropic-mononoke/"&gt;was heavily inspired by Mononoke&lt;/a&gt;, the server component of Sapling.)&lt;/p&gt;
+&lt;p&gt;They had some pretty extreme requirements:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;The history of our main branch alone is almost 100 GB, and a &lt;em&gt;compressed&lt;/em&gt; working copy is over 25 GB. We perform on the order of 25 million code checkouts per day for CI, before counting developer environments, agent sandboxes, and research jobs. Fetched naively, that would be over 600 PB of git traffic per day.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;The new system was built by a team of seven people, and the migration from Git was completed in five months.&lt;/p&gt;
+&lt;p&gt;When asked on Hacker News about the lack of offline support, Scion engineer Nick G &lt;a href="https://news.ycombinator.com/item?id=50073633#50079495"&gt;replied&lt;/a&gt;:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Since Claude is by far the heaviest user of Scion and is necessarily online, this just wasn't important to do.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;As an aside, I've been trying adversarial review in my own projects recently, where you have a model try and find flaws (I often play Claude and GPT off against each other). This note from the article reflected my own experience with that:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Anthropic also makes extensive use of adversarial review, and, while this is incredibly effective in many ways, it can also be myopic, so skilled engineers needed to steer Claude away from over-engineering parts of the system in response to hypothetical concerns.&lt;/p&gt;
+&lt;/blockquote&gt;
+
+    &lt;p&gt;&lt;small&gt;&lt;/small&gt;Via &lt;a href="https://news.ycombinator.com/item?id=50073633"&gt;Hacker News&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/git"&gt;git&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/migrations"&gt;migrations&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/version-control"&gt;version-control&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/anthropic"&gt;anthropic&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/agentic-engineering"&gt;agentic-engineering&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="git"/><category term="migrations"/><category term="version-control"/><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="anthropic"/><category term="agentic-engineering"/></entry><entry><title>llm-gemini 0.35</title><link href="https://simonwillison.net/2026/Oct/13/llm-gemini/" rel="alternate"/><published>2026-10-13T22:28:54+00:00</published><updated>2026-10-13T22:28:54+00:00</updated><id>https://simonwillison.net/2026/Oct/13/llm-gemini/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/llm-gemini/releases/tag/0.35"&gt;llm-gemini 0.35&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;I added support to &lt;a href="https://github.com/simonw/llm-gemini"&gt;llm-gemini&lt;/a&gt; for the &lt;a href="https://blog.google/innovation-and-ai/models-and-research/gemini-models/gemini-4-argon/"&gt;new Gemini 4 Argon&lt;/a&gt; model, made available today via the Gemini API and for customers of their $100/month subscription plan.&lt;/p&gt;
+&lt;p&gt;Here are &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https%3A%2F%2Fgist.github.com%2Fsimonw%2Fd741e4420dea14c460f0108ac22dbc26"&gt;the low, medium and high pelicans&lt;/a&gt;. As expected, they are all excellent: Gemini has a track record of producing great SVGs, and are the only lab where I know their &lt;a href="https://twitter.com/sunjiao123sun_/status/2024555516551372920"&gt;staff have invested in SVG specifically&lt;/a&gt; (and who have &lt;a href="https://simonwillison.net/2026/Feb/19/gemini-31-pro/#jeff-dean"&gt;boasted about their pelicans&lt;/a&gt; before.)&lt;/p&gt;
+&lt;p&gt;Here's the "high" illustration, which cost me 17.166 cents:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Stylish, accurate bicycle frame. Fish in the basket. Snazzy scarf. Feet on either side of the frame touching the pedals. Spokes, a little hat, a good beak and pouch, a somewhat fierce expression." src="https://static.simonwillison.net/static/2026/gemini-4-argon-high.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;The pricing is interesting. At launch, Argon is $2/million input and $10/million output - the same price as GPT-6 Sol, half the price of Claude Opus 5.5 and 1/5th the price of Claude Fable 5.1 and GPT-6 Astra.&lt;/p&gt;
+&lt;p&gt;But on December 1st Argon is set to double in price - so it will be the same price as Opus 5.5.&lt;/p&gt;
+&lt;p&gt;Prices like this aren't really comparable these days since what really matters is how many tokens a model takes to achieve a goal within an agentic harness.&lt;/p&gt;
+&lt;p&gt;One useful clue for that comes from Artificial Analysis, who publish &lt;a href="https://artificialanalysis.ai/#total-cost-tabs"&gt;the total cost to run their benchmark&lt;/a&gt; using each model. Argon is looking very good there - costing $2,407 to run the benchmark, putting it close to GLM-5.3 and significantly cheaper than OpenAI, Anthropic, and Meta's latest models.&lt;/p&gt;
+&lt;p&gt;When the price doubles it will still be a little cheaper than GPT-6 Astra.&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Screenshot of a stacked bar chart from Artificial Analysis comparing dollar costs for 14 AI models, sorted from lowest to highest, with bars colored by provider, the provider's logo beneath each bar and angled model names along the bottom. Logo at top right: Artificial Analysis. A hover tooltip pointing at the Gemini 4 Argon bar reads: Gemini 4 Argon (High), $2,407, Output $313, Reasoning $815, Cache Write $897, Cache Read $264, Non-Cache Input $118, Click for more info. Bars from left to right, with the total above each bar and some segment values printed inside: Qwen3.8 27B (xhigh), $1,336, Alibaba logo; Mistral Large 4 Preview, $1,607, Mistral logo; Gemini 3.8 Flash (high), $1,623, Google logo; Muse Spark 1.3 (max), $2,000, segment $769, Meta logo; Gemini 4 Argon (high), $2,407, segments $815 and $897, Google logo; GLM-5.3 (max), $2,503, segment $790, Z.ai logo; Kimi K3 (max), $3,658, Kimi logo; Qwen3.8 Max (0902), $4,935, segments $893 and $1,441, Alibaba logo; Grok 4.7 (xhigh), $4,967, segments $1,861 and $1,618, xAI logo; GPT-6 Astra (max), $5,324, segments $778 and $978, OpenAI logo; Muse Wonder (max), $5,733, segment $1,748, Meta logo; Claude Sonnet 5.5 (max with fallback), $7,260, segments $1,216 and $1,815, Anthropic logo; Claude Opus 5.5 (max with fallback), $8,708, segment $921, Anthropic logo; Claude Fable 5.1 (max with fallback), $13,129, segment $7,219, Anthropic logo." src="https://static.simonwillison.net/static/2026/gemini-4-argon-artificial-analysis.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;&lt;small&gt;(I &lt;a href="https://chatgpt.com/share/6acebe13-5378-83e8-bf2f-9f4d05b206f4"&gt;used ChatGPT to edit that chart&lt;/a&gt;! The data is all correct, I checked - I needed to get that Gemini 4 Argon info box to display without overlapping the other numbers.)&lt;/small&gt;&lt;/p&gt;
+&lt;p&gt;Some bonus examples using Gemini 4 Argon: here's &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https%3A%2F%2Fgist.github.com%2Fsimonw%2F9589ff9e0c977bbf3b012b7a11f5bd71"&gt;Generate an SVG of an armadillo in fishnet tights jaywalking on Mars&lt;/a&gt;, here's &lt;a href="https://tools.simonwillison.net/blender-viewer?url=https%3A%2F%2Fstatic.simonwillison.net%2Fstatic%2Fcors-allow%2F2026%2Fgemini-4-astra-egg.blend"&gt;a Fabergé egg&lt;/a&gt; it created for me using Blender, and DeepMind staffer @fofrAI shared &lt;a href="https://twitter.com/fofrai/status/2110043023954284889"&gt;a video of a pelican riding a bike, using fourier epicycles&lt;/a&gt;. That's a fun new twist!&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/google"&gt;google&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llm"&gt;llm&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/gemini"&gt;gemini&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llm-pricing"&gt;llm-pricing&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/pelican-riding-a-bicycle"&gt;pelican-riding-a-bicycle&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llm-release"&gt;llm-release&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="google"/><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="llm"/><category term="gemini"/><category term="llm-pricing"/><category term="pelican-riding-a-bicycle"/><category term="llm-release"/></entry><entry><title>Quoting Geoffrey Huntley</title><link href="https://simonwillison.net/2026/Oct/13/geoffrey-huntley/" rel="alternate"/><published>2026-10-13T13:32:00+00:00</published><updated>2026-10-13T13:32:00+00:00</updated><id>https://simonwillison.net/2026/Oct/13/geoffrey-huntley/</id><summary type="html">
+    &lt;blockquote cite="https://ghuntley.com/agency/"&gt;&lt;p&gt;If the agent isn't using my diagnostics library, I could introspect and update AGENTS.md, but there's still a delta, and it'll drift. Instead, I write a pre-commit hook that checks the git diff for direct calls to observability modules that bypass my diagnostics module. Boom: fail the commit, inject a prompt telling the agent to use the diagnostics library. All of a sudden it's ten out of ten.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://ghuntley.com/agency/"&gt;Geoffrey Huntley&lt;/a&gt;, nobody should type code by hand anymore. here's what's left.&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/coding-agents"&gt;coding-agents&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/git"&gt;git&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/agentic-engineering"&gt;agentic-engineering&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/geoffrey-huntley"&gt;geoffrey-huntley&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="coding-agents"/><category term="generative-ai"/><category term="git"/><category term="agentic-engineering"/><category term="ai"/><category term="geoffrey-huntley"/><category term="llms"/></entry><entry><title>web-edit 0.1a1</title><link href="https://simonwillison.net/2026/Oct/13/web-edit/" rel="alternate"/><published>2026-10-13T01:40:05+00:00</published><updated>2026-10-13T01:40:05+00:00</updated><id>https://simonwillison.net/2026/Oct/13/web-edit/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/web-edit/releases/tag/0.1a1"&gt;web-edit 0.1a1&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Includes &lt;a href="https://github.com/simonw/web-edit/pull/1"&gt;performance optimizations&lt;/a&gt; written &lt;a href="https://claude.ai/code/session_01LE2R4P74P9GGUbE6yQ5YBt"&gt;by Claude Opus 5.5&lt;/a&gt; after I fed it &lt;a href="https://simonwillison.net/2026/Oct/12/python-3-15-web-edit-profiling/"&gt;this Python 3.15 profiling report&lt;/a&gt; generated by GPT-6 Astra.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/profiling"&gt;profiling&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/projects"&gt;projects&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="profiling"/><category term="projects"/></entry><entry><title>llm-meta-ai 0.2</title><link href="https://simonwillison.net/2026/Oct/12/llm-meta-ai/" rel="alternate"/><published>2026-10-12T23:58:46+00:00</published><updated>2026-10-12T23:58:46+00:00</updated><id>https://simonwillison.net/2026/Oct/12/llm-meta-ai/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/llm-meta-ai/releases/tag/0.2"&gt;llm-meta-ai 0.2&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;Meta AI release &lt;a href="https://research.meta.ai/blog/muse-wonder"&gt;Muse Wonder&lt;/a&gt; (and Muse Wonder Full), their new "most capable models". These look like they may be Meta's first &lt;a href="https://simonwillison.net/2026/Sep/27/2026-in-llms-so-far/#simon-willison-2026-in-llms.042.webp"&gt;Fable class models&lt;/a&gt; - Artificial Analysis &lt;a href="https://artificialanalysis.ai/models/muse-wonder"&gt;scores Muse Wonder (Max)&lt;/a&gt; as equivalent to GPT-6.1 Sol.&lt;/p&gt;
+&lt;p&gt;I updated my &lt;code&gt;llm-meta-ai&lt;/code&gt; plugin for the new model. Here are &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https://gist.github.com/simonw/185cff7ff0b11379725abf7f78d5d2b2"&gt;pelicans for Muse Wonder&lt;/a&gt; for the six reasoning levels: minimal, low, medium, high, xhigh, max. This is the max one:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Blue cycling helmet, bicycle is missing one bar but otherwise an OK shape, has mudguards, nice background, OK beak." src="https://static.simonwillison.net/static/2026/muse-wonder-max.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;For comparison, here are &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https://gist.github.com/simonw/1f8c25686971da82077e34c088d408db"&gt;pelicans for Muse 1.3&lt;/a&gt; (released September 2nd) and &lt;a href="https://tools.simonwillison.net/markdown-svg-renderer?url=https%3A%2F%2Fgist.github.com%2Fsimonw%2Fce974a21202b0595e36ec2a5ddb51480"&gt;Muse 1.2&lt;/a&gt; (released August 5th). Meta AI are putting out a new model a month, and the improvements between each model (at least in terms of drawing pelicans) are material.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/meta"&gt;meta&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/pelican-riding-a-bicycle"&gt;pelican-riding-a-bicycle&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llm-release"&gt;llm-release&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="ai"/><category term="generative-ai"/><category term="llms"/><category term="meta"/><category term="pelican-riding-a-bicycle"/><category term="llm-release"/></entry><entry><title>Hello Python 3.15, goodbye 3.10, and now I can use 3.11</title><link href="https://simonwillison.net/2026/Oct/12/python-3-15/" rel="alternate"/><published>2026-10-12T18:15:38+00:00</published><updated>2026-10-12T18:15:38+00:00</updated><id>https://simonwillison.net/2026/Oct/12/python-3-15/</id><summary type="html">
+    &lt;p&gt;Python 3.15 &lt;a href="https://www.python.org/downloads/release/python-3150/"&gt;is here&lt;/a&gt;! Here's the essential &lt;a href="https://docs.python.org/3.15/whatsnew/3.15.html"&gt;What's new in Python 3.15&lt;/a&gt; guide, this year curated by 3.14 and 3.15 release manager Hugo van Kemenade. As someone who builds open source software that works in every supported Python version, I get to say goodbye to Python 3.10 and start embracing features from Python 3.11.&lt;/p&gt;
+&lt;p&gt;First, some highlights from Python 3.15.&lt;/p&gt;
+&lt;h4 id="explicit-lazy-imports"&gt;Explicit lazy imports&lt;/h4&gt;
+&lt;p&gt;I'm most excited about &lt;a href="https://docs.python.org/3.15/whatsnew/3.15.html#pep-810-explicit-lazy-imports"&gt;Explicit lazy imports&lt;/a&gt; from &lt;a href="https://peps.python.org/pep-0810/"&gt;PEP 810&lt;/a&gt;. These let you import modules like so:&lt;/p&gt;
+&lt;pre&gt;&lt;span class="pl-s1"&gt;lazy&lt;/span&gt; &lt;span class="pl-k"&gt;import&lt;/span&gt; &lt;span class="pl-s1"&gt;json&lt;/span&gt;
+&lt;span class="pl-s1"&gt;lazy&lt;/span&gt; &lt;span class="pl-k"&gt;from&lt;/span&gt; &lt;span class="pl-s1"&gt;pathlib&lt;/span&gt; &lt;span class="pl-k"&gt;import&lt;/span&gt; &lt;span class="pl-v"&gt;Path&lt;/span&gt;&lt;/pre&gt;
+&lt;p&gt;The module will then be imported the first time those symbols are used in the code that follows.&lt;/p&gt;
+&lt;p&gt;My &lt;a href="https://llm.datasette.io/"&gt;LLM&lt;/a&gt; CLI tool implements plugins. I had to &lt;a href="https://llm.datasette.io/en/stable/plugins/advanced-model-plugins.html#tip-lazily-load-expensive-dependencies"&gt;recommend manual lazy imports&lt;/a&gt; in the plugin author documentation, because simply installing plugins that used heavy dependencies such as &lt;code&gt;sentence_transformers&lt;/code&gt; could add multiple seconds to every invocation of the &lt;code&gt;llm&lt;/code&gt; command. Lazy imports directly address this startup cost.&lt;/p&gt;
+&lt;h4 id="unpacking-in-comprehensions"&gt;Unpacking in comprehensions&lt;/h4&gt;
+&lt;p&gt;The new &lt;code&gt;[*sublist for sublist in lists]&lt;/code&gt; unpacking syntax is neat. Here's an illustration &lt;a href="https://docs.python.org/3.15/whatsnew/3.15.html#pep-798-unpacking-in-comprehensions"&gt;lifted from the documentation&lt;/a&gt;:&lt;/p&gt;
+&lt;pre&gt;&lt;span class="pl-s1"&gt;lists&lt;/span&gt; &lt;span class="pl-c1"&gt;=&lt;/span&gt; [[&lt;span class="pl-c1"&gt;1&lt;/span&gt;, &lt;span class="pl-c1"&gt;2&lt;/span&gt;], [&lt;span class="pl-c1"&gt;3&lt;/span&gt;, &lt;span class="pl-c1"&gt;4&lt;/span&gt;], [&lt;span class="pl-c1"&gt;5&lt;/span&gt;]]
+[&lt;span class="pl-c1"&gt;*&lt;/span&gt;&lt;span class="pl-c1"&gt;L&lt;/span&gt; &lt;span class="pl-k"&gt;for&lt;/span&gt; &lt;span class="pl-c1"&gt;L&lt;/span&gt; &lt;span class="pl-c1"&gt;in&lt;/span&gt; &lt;span class="pl-s1"&gt;lists&lt;/span&gt;]
+&lt;span class="pl-c"&gt;# [1, 2, 3, 4, 5]&lt;/span&gt;
+&lt;span class="pl-c"&gt;# equivalent to [x for L in lists for x in L]&lt;/span&gt;
+
+&lt;span class="pl-s1"&gt;sets&lt;/span&gt; &lt;span class="pl-c1"&gt;=&lt;/span&gt; [{&lt;span class="pl-c1"&gt;1&lt;/span&gt;, &lt;span class="pl-c1"&gt;2&lt;/span&gt;}, {&lt;span class="pl-c1"&gt;2&lt;/span&gt;, &lt;span class="pl-c1"&gt;3&lt;/span&gt;}, {&lt;span class="pl-c1"&gt;3&lt;/span&gt;, &lt;span class="pl-c1"&gt;4&lt;/span&gt;}]
+{&lt;span class="pl-c1"&gt;*&lt;/span&gt;&lt;span class="pl-s1"&gt;s&lt;/span&gt; &lt;span class="pl-k"&gt;for&lt;/span&gt; &lt;span class="pl-s1"&gt;s&lt;/span&gt; &lt;span class="pl-c1"&gt;in&lt;/span&gt; &lt;span class="pl-s1"&gt;sets&lt;/span&gt;}
+&lt;span class="pl-c"&gt;# {1, 2, 3, 4}&lt;/span&gt;
+&lt;span class="pl-c"&gt;# equivalent to {x for s in sets for x in s}&lt;/span&gt;
+
+&lt;span class="pl-s1"&gt;dicts&lt;/span&gt; &lt;span class="pl-c1"&gt;=&lt;/span&gt; [{&lt;span class="pl-s"&gt;'a'&lt;/span&gt;: &lt;span class="pl-c1"&gt;1&lt;/span&gt;}, {&lt;span class="pl-s"&gt;'b'&lt;/span&gt;: &lt;span class="pl-c1"&gt;2&lt;/span&gt;}, {&lt;span class="pl-s"&gt;'a'&lt;/span&gt;: &lt;span class="pl-c1"&gt;3&lt;/span&gt;}]
+{&lt;span class="pl-c1"&gt;**&lt;/span&gt;&lt;span class="pl-s1"&gt;d&lt;/span&gt; &lt;span class="pl-s1"&gt;for&lt;/span&gt; &lt;span class="pl-s1"&gt;d&lt;/span&gt; &lt;span class="pl-c1"&gt;in&lt;/span&gt; &lt;span class="pl-s1"&gt;dicts&lt;/span&gt;}
+&lt;span class="pl-c"&gt;# {'a': 3, 'b': 2}&lt;/span&gt;
+&lt;span class="pl-c"&gt;# equivalent to {k: v for d in dicts for k,v in d.items()}&lt;/span&gt;&lt;/pre&gt;
+&lt;p&gt;&lt;a href="https://peps.python.org/pep-0798/"&gt;PEP 798: Unpacking in Comprehensions&lt;/a&gt; by Adam Hartz and Erik Demaine proposed this as an extension of the unpacking syntax &lt;a href="https://peps.python.org/pep-0448/"&gt;from PEP 448&lt;/a&gt;, which landed &lt;a href="https://docs.python.org/3/whatsnew/3.5.html#pep-448-additional-unpacking-generalizations"&gt;in Python 3.5&lt;/a&gt; back in 2015.&lt;/p&gt;
+&lt;h4 id="a-sampling-profiler"&gt;A sampling profiler&lt;/h4&gt;
+&lt;p&gt;Python's existing tracing profiler has been renamed from &lt;code&gt;cProfile&lt;/code&gt; to &lt;a href="https://docs.python.org/3.15/library/profiling.tracing.html#module-profiling.tracing"&gt;profiling.tracing&lt;/a&gt;, and has been joined by an exciting new sampling profiler called Tachyon, aka &lt;a href="https://docs.python.org/3.15/whatsnew/3.15.html#tachyon-high-frequency-statistical-sampling-profiler"&gt;profiling.sampling&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;Sampling profilers work by periodically capturing stack traces from running processes, then using those to calculate which functions have the most time spent inside of them. They're very low overhead and can provide a deep insight into running systems, without needing to instrument those systems first.&lt;/p&gt;
+&lt;p&gt;I've &lt;a href="https://simonwillison.net/tags/profiling/"&gt;previously used tools&lt;/a&gt; like &lt;a href="https://github.com/benfred/py-spy"&gt;py-spy&lt;/a&gt; for this. Now this capability is baked into the standard library.&lt;/p&gt;
+&lt;p&gt;If you have the PID of an existing Python 3.15 process you can start gathering samples by running this (I had to use &lt;code&gt;sudo&lt;/code&gt; on macOS):&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;sudo uv run --python 3.15 python -m profiling.sampling attach 1234&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Interact with the main program a bit, then hit Ctrl+C to stop gathering and see a report, which looks something like this:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://static.simonwillison.net/static/2026/profiler-output.webp" alt="Screenshot of terminal output from a Python sampling profiler with colored text on a black background. Header lines report 2,651 samples captured in 2.65 seconds at a sample rate of 999.98 samples/sec with an error rate of 0.19. A Profile Stats table with columns for nsamples, sample%, tottime, cumul%, cumtime and filename:lineno(function) shows that 99.9% of samples (2.644 seconds) were spent directly in selectors.py KqueueSelector.select, meaning the process was almost entirely idle waiting on the asyncio event loop. The rest of the table lists the call stack beneath it with zero direct time but 100% cumulative presence: asyncio base_events.py run_once, run_forever and run_until_complete, runners.py Runner.run and run, cli.py serve and sqlite_extensions wrapped, and several click core.py invoke, main and call frames. A legend explains each column, followed by a Summary of Interesting Functions section listing hot spots (KqueueSelector.select at 99.9% direct samples), the most frequently present functions on the stack (run_forever, run_until_complete and Runner.run at 100%), and the highest call magnification (2645.0x for BaseEventLoop._run_once)." style="max-width: 100%;" /&gt;&lt;/p&gt;
+&lt;p&gt;It can also produce &lt;a href="https://simonw.github.io/research/python-3-15-web-edit-profiling/artifacts/flamegraph.html"&gt;flame graphs like this&lt;/a&gt; and &lt;a href="https://simonw.github.io/research/python-3-15-web-edit-profiling/artifacts/heatmap/index.html"&gt;heat maps like this&lt;/a&gt;, and can even output a format that can be viewed in the Firefox profiler UI.&lt;/p&gt;
+&lt;h4 id="3-15-isn-t-much-faster-than-3-14"&gt;3.15 isn't much faster than 3.14&lt;/h4&gt;
+&lt;p&gt;Miguel Grinberg investigated &lt;a href="https://blog.miguelgrinberg.com/post/how-fast-is-python-3-15"&gt;How fast is Python 3.15?&lt;/a&gt; the other day against the 3.15.0rc3 release and found performance to be mostly the same as 3.14, with the exception of the experimental JIT. The JIT gave a 1.2x boost over the standard 3.15 interpreter (on a Fibonacci test), the first time Miguel observed a meaningful JIT performance increase.&lt;/p&gt;
+&lt;p&gt;Miguel's &lt;a href="https://blog.miguelgrinberg.com/post/python-3-14-is-here-how-fast-is-it"&gt;explorations of 3.14&lt;/a&gt; last year found significant boosts against Python 3.13 across many more categories.&lt;/p&gt;
+&lt;h4 id="upgrading-to-python-3-15-with-uv"&gt;Upgrading to Python 3.15 with uv&lt;/h4&gt;
+&lt;p&gt;I used the following sequence of commands to get &lt;code&gt;uv&lt;/code&gt; to use Python 3.15 on my Mac. First I had to upgrade &lt;code&gt;uv&lt;/code&gt; itself to ensure it knew about the new release:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;uv self update&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Then I installed the stable 3.15 release:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;uv python install 3.15&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;And told &lt;code&gt;uv&lt;/code&gt; that I wanted that to be the default for every &lt;code&gt;uv run&lt;/code&gt; command, unless the project itself pinned a different version:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;uv python pin --global 3.15&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Now the following reports 3.15 as the version:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;uv run python --version&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;I already have a bunch of tools installed using &lt;code&gt;uv tool install&lt;/code&gt;. I reinstalled them to use Python 3.15 like this:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;uv tool upgrade datasette --python 3.15&lt;/pre&gt;&lt;/div&gt;
+&lt;p&gt;Then I can confirm the version like this:&lt;/p&gt;
+&lt;div class="highlight highlight-source-shell"&gt;&lt;pre&gt;datasette --get /-/versions.json &lt;span class="pl-k"&gt;|&lt;/span&gt; jq&lt;/pre&gt;&lt;/div&gt;
+&lt;h4 id="highlights-from-python-3-11"&gt;Highlights from Python 3.11&lt;/h4&gt;
+&lt;p&gt;The release of 3.15 means that Python 3.10 (released in 2021) is officially &lt;a href="https://devguide.python.org/versions/"&gt;no longer supported&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;My policy for my main open source projects is to keep them working in every supported Python version. I can now drop 3.10 and start using features that were introduced in 3.11.&lt;/p&gt;
+&lt;p&gt;Here's the &lt;a href="https://docs.python.org/3/whatsnew/3.11.html"&gt;What's new in Python 3.11&lt;/a&gt; document. I finally get to rely on &lt;a href="https://docs.python.org/3/library/tomllib.html#module-tomllib"&gt;tomllib&lt;/a&gt; being available!&lt;/p&gt;
+&lt;p&gt;Datasette makes extensive use of &lt;code&gt;asyncio&lt;/code&gt;. 3.11 adds &lt;a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.TaskGroup"&gt;TaskGroup&lt;/a&gt; and &lt;a href="https://docs.python.org/3/library/asyncio-task.html#asyncio.timeout"&gt;timeout()&lt;/a&gt;, and &lt;a href="https://docs.python.org/3/whatsnew/3.11.html#asyncio"&gt;several more&lt;/a&gt; new features.&lt;/p&gt;
+&lt;p&gt;&lt;code&gt;datetime.UTC&lt;/code&gt; is a new in 3.11 alias for &lt;code&gt;datetime.timezone.utc&lt;/code&gt;.&lt;/p&gt;
+&lt;p&gt;Python's SQLite support got some significant upgrades in 3.11, including:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;
+&lt;a href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.setlimit"&gt;setlimit()&lt;/a&gt; and &lt;a href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.getlimit"&gt;getlimit()&lt;/a&gt; expose a mechanism for setting &lt;a href="https://www.sqlite.org/c3ref/c_limit_attached.html"&gt;SQLite runtime limits&lt;/a&gt; from Python.&lt;/li&gt;
+&lt;li&gt;
+&lt;a href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.create_window_function"&gt;create_window_function()&lt;/a&gt; lets us create custom window functions in Python, as a class with &lt;code&gt;step()&lt;/code&gt;, &lt;code&gt;value()&lt;/code&gt;, &lt;code&gt;inverse()&lt;/code&gt;, and &lt;code&gt;finalize()&lt;/code&gt; methods.&lt;/li&gt;
+&lt;li&gt;
+&lt;a href="https://docs.python.org/3/library/sqlite3.html#sqlite3.Connection.blobopen"&gt;blobopen()&lt;/a&gt; provides an efficient mechanism for partial reads and writes of large &lt;code&gt;BLOB&lt;/code&gt; binary values stored in a SQLite row.&lt;/li&gt;
+&lt;li&gt;You can now call &lt;code&gt;set_authorizer(None)&lt;/code&gt; to remove a SQLite authorizer. Datasette had a workaround for this!&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;Plus a whole bunch of &lt;a href="https://docs.python.org/3/whatsnew/3.11.html#new-feat-related-type-hints-311"&gt;improvements to Python's typing system&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;I plan to land Python 3.11 improvements to a bunch of my projects over the next few weeks. Here's &lt;a href="https://github.com/simonw/datasette/pull/2998"&gt;my first Datasette PR&lt;/a&gt; removing that &lt;code&gt;set_authorizer(None)&lt;/code&gt; workaround.&lt;/p&gt;
+&lt;p&gt;I've also updated my &lt;a href="https://github.com/simonw/click-app"&gt;click-app&lt;/a&gt;, &lt;a href="https://github.com/simonw/datasette-plugin"&gt;datasette-plugin&lt;/a&gt;, &lt;a href="https://github.com/simonw/python-lib"&gt;python-lib&lt;/a&gt;, and &lt;a href="https://github.com/simonw/llm-plugin"&gt;llm-plugin&lt;/a&gt; cookiecutter templates to test against Python 3.11 through Python 3.15.&lt;/p&gt;
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/open-source"&gt;open-source&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/profiling"&gt;profiling&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/python"&gt;python&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/sqlite"&gt;sqlite&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/uv"&gt;uv&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="open-source"/><category term="profiling"/><category term="python"/><category term="sqlite"/><category term="uv"/></entry><entry><title>Profiling web-edit with Python 3.15: flame graphs and source heatmaps</title><link href="https://simonwillison.net/2026/Oct/12/python-3-15-web-edit-profiling/" rel="alternate"/><published>2026-10-12T16:58:00+00:00</published><updated>2026-10-12T16:58:00+00:00</updated><id>https://simonwillison.net/2026/Oct/12/python-3-15-web-edit-profiling/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Research:&lt;/strong&gt; &lt;a href="https://github.com/simonw/research/tree/main/python-3-15-web-edit-profiling#readme"&gt;Profiling web-edit with Python 3.15: flame graphs and source heatmaps&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;I put the &lt;a href="https://simonwillison.net/2026/Oct/12/python-3-15/#a-sampling-profiler"&gt;new Python 3.15 profiler&lt;/a&gt; through its paces by having GPT-6 Astra Extra High in Codex run it against my new &lt;a href="https://simonwillison.net/2026/Oct/12/web-edit/"&gt;web-edit app&lt;/a&gt;:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;I need a Python 3.15 flame graph and heatmap demo of the "web-edit" app from PyPI - research first then make me those demos&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Here's the resulting example &lt;a href="https://simonw.github.io/research/python-3-15-web-edit-profiling/artifacts/flamegraph.html"&gt;flame graph&lt;/a&gt; and &lt;a href="https://simonw.github.io/research/python-3-15-web-edit-profiling/artifacts/heatmap/index.html"&gt;heatmap&lt;/a&gt;.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/profiling"&gt;profiling&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/python"&gt;python&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/codex"&gt;codex&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="profiling"/><category term="python"/><category term="codex"/></entry><entry><title>web-edit 0.1a0</title><link href="https://simonwillison.net/2026/Oct/12/web-edit/" rel="alternate"/><published>2026-10-12T15:54:36+00:00</published><updated>2026-10-12T15:54:36+00:00</updated><id>https://simonwillison.net/2026/Oct/12/web-edit/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/web-edit/releases/tag/0.1a0"&gt;web-edit 0.1a0&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;I was working on a project from my phone using Codex Remote when I found myself wanting to edit a credentials file without round-tripping those credentials through the LLM itself.&lt;/p&gt;
+&lt;p&gt;So... I had Codex and GPT-6 Astra Extra High build this Python web app which provides a web UI for viewing and editing files in a folder. It's intended to be run over Tailscale, so I can have an agent start this running and then edit files via my Tailscale network directly from my phone.&lt;/p&gt;
+&lt;p&gt;Here's the interface for browsing files in a folder:&lt;/p&gt;
+&lt;p&gt;&lt;img alt="Screenshot of a web file manager interface. Header reads &amp;quot;WORKSPACE&amp;quot; above the title &amp;quot;Files&amp;quot;, with buttons &amp;quot;Refresh&amp;quot;, &amp;quot;Upload files&amp;quot; and &amp;quot;New file&amp;quot; (dark green). A breadcrumb shows &amp;quot;web-edit / web_edit / static&amp;quot;. A table with columns &amp;quot;Name&amp;quot;, &amp;quot;Size&amp;quot;, &amp;quot;Modified&amp;quot; lists four files, each with &amp;quot;Download ↓&amp;quot; and &amp;quot;Delete&amp;quot; links: &amp;quot;app.css&amp;quot; 8.4 KB Oct 12, 2026; &amp;quot;app.js&amp;quot; 671.5 KB Oct 12, 2026; &amp;quot;index.html&amp;quot; 4.3 KB Oct 12, 2026 (underlined, as if hovered); &amp;quot;THIRD_PARTY_LICENSES.txt&amp;quot; 32.3 KB Oct 12, 2026. Below the table: &amp;quot;Images under 2 MB appear inline. Select a text file to edit it.&amp;quot; A panel below is labelled &amp;quot;UPLOAD QUEUE&amp;quot; with heading &amp;quot;Add files&amp;quot; and a &amp;quot;Close&amp;quot; button. It has a &amp;quot;Destination folder&amp;quot; text field containing &amp;quot;web_edit&amp;quot;, then a dashed drop zone reading &amp;quot;Choose files or drop them here&amp;quot; and &amp;quot;Set a path and filename for each file before uploading.&amp;quot; with a &amp;quot;Choose Files&amp;quot; button and the text &amp;quot;no files selected&amp;quot;. A greyed-out &amp;quot;Upload files&amp;quot; button sits at the bottom right." src="https://static.simonwillison.net/static/2026/web-edit.webp" /&gt;&lt;/p&gt;
+&lt;p&gt;Editing uses &lt;a href="https://codemirror.net"&gt;CodeMirror 6&lt;/a&gt; - I was going to use &lt;a href="https://microsoft.github.io/monaco-editor/"&gt;Monaco&lt;/a&gt; but that still doesn't have a great mobile experience yet.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/projects"&gt;projects&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/python"&gt;python&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/tailscale"&gt;tailscale&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/codex"&gt;codex&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="projects"/><category term="python"/><category term="ai"/><category term="tailscale"/><category term="generative-ai"/><category term="llms"/><category term="codex"/></entry><entry><title>datasette-ports 0.4</title><link href="https://simonwillison.net/2026/Oct/12/datasette-ports/" rel="alternate"/><published>2026-10-12T04:57:07+00:00</published><updated>2026-10-12T04:57:07+00:00</updated><id>https://simonwillison.net/2026/Oct/12/datasette-ports/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/datasette/datasette-ports/releases/tag/0.4"&gt;datasette-ports 0.4&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;My plugin for detecting and listing all Datasette instances on the current machine now works with the latest version, and displays the detected PID as well. Knowing the PID makes it easier to &lt;a href="https://simonwillison.net/2026/Oct/12/python-3-15/#a-sampling-profiler"&gt;attach the new Python 3.15 profiler&lt;/a&gt;.&lt;/p&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/datasette"&gt;datasette&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="datasette"/></entry><entry><title>Dwarf Fortress uses version control now</title><link href="https://simonwillison.net/2026/Oct/11/dwarf-fortress/" rel="alternate"/><published>2026-10-11T00:52:37+00:00</published><updated>2026-10-11T00:52:37+00:00</updated><id>https://simonwillison.net/2026/Oct/11/dwarf-fortress/</id><summary type="html">
+    &lt;p&gt;I remember hearing a while ago that Dwarf Fortress didn't use version control. That fact has been lodged in my head, because given its inherent complexity I have trouble imagining a codebase that would benefit from version control &lt;em&gt;more&lt;/em&gt;. That's art.&lt;/p&gt;
+&lt;p&gt;I went looking and I'm sad to report that the days without version control appear to have ended. Quoting Tarn Adams over time:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;March 2013: &lt;a href="https://www.reddit.com/r/IAmA/comments/1avszc/comment/c919fo8/?solution=43270267461a564b43270267461a564b&amp;amp;js_challenge=1&amp;amp;jsc_token=2824be10929bdc604753c70a67a1c3310860c2cae0f946ff767fab3727807a35&amp;amp;jsc_orig_r="&gt;"I don't use version control -- I didn't like the feeling of having the code get committed into a black box thingy with no immediate upside"&lt;/a&gt;&lt;/li&gt;
+&lt;li&gt;March 2016: &lt;a href="https://www.pcgamer.com/dwarf-fortress-creator-on-how-hes-42-towards-simulating-existence/3/"&gt;"I don’t even use version control. If you don’t know what that is then you’re not gonna yell at me. If you even know what version control is you’re gonna be like, ‘You don’t use version control? You don’t use source control? What is wrong with you? How can you even work? I’m just not cut out for it, in a sense. It’s been 15 years, so the reasons have change over time, but that’s my current understanding of it."&lt;/a&gt; &lt;/li&gt;
+&lt;li&gt;March 2023: &lt;a href="https://www.gamedeveloper.com/programming/how-tarn-adams-upgraded-and-optimized-dwarf-fortress-for-its-official-steam-release"&gt;"I've got Discord channels to check and version control stuff to use now, so the process is definitely a little more involved"&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;That March 2023 quote comes from an interview about the release on Steam which &lt;a href="https://www.pcgamer.com/after-spending-20-years-simulating-reality-the-dwarf-fortress-devs-have-to-get-used-to-a-new-one-being-millionaires/"&gt;made them millionaires&lt;/a&gt;. I'm a tiny bit sad that they gave in before they hit that milestone, but what an impressive run.&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/version-control"&gt;version-control&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="version-control"/></entry><entry><title>Python 3.15.0 added to actions/python-versions</title><link href="https://simonwillison.net/2026/Oct/10/python-actions/" rel="alternate"/><published>2026-10-10T23:58:04+00:00</published><updated>2026-10-10T23:58:04+00:00</updated><id>https://simonwillison.net/2026/Oct/10/python-actions/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://github.com/actions/python-versions/commit/49858b91c92d27403416ee43117032e91d00ce24"&gt;Python 3.15.0 added to actions/python-versions&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+Bit of a niche link, but I've been waiting for this for a couple of days - I even &lt;a href="https://chatgpt.com/share/6acad42a-2868-83e8-9a16-736f9def2b45"&gt;told ChatGPT&lt;/a&gt; to check for it:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Clone https://github.com/actions/python-versions  and git pull once an hour until they add the stable  3.15 - then tell me about it&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Now that this has landed, you can add &lt;code&gt;"3.15"&lt;/code&gt; to a GitHub Actions testing matrix to run tests against the &lt;a href="https://www.python.org/downloads/release/python-3150/"&gt;new Python 3.15.0 release&lt;/a&gt;.
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/github"&gt;github&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/python"&gt;python&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/github-actions"&gt;github-actions&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/chatgpt"&gt;chatgpt&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="github"/><category term="python"/><category term="github-actions"/><category term="chatgpt"/></entry><entry><title>Quoting The New York Times</title><link href="https://simonwillison.net/2026/Oct/10/the-new-york-times/" rel="alternate"/><published>2026-10-10T02:04:12+00:00</published><updated>2026-10-10T02:04:12+00:00</updated><id>https://simonwillison.net/2026/Oct/10/the-new-york-times/</id><summary type="html">
+    &lt;blockquote cite="https://www.nytimes.com/2026/10/09/technology/anthropic-rogue-ai-agents.html"&gt;&lt;p&gt;Anthropic detailed the activity of its A.I. agents in &lt;a href="https://www.anthropic.com/research/investigating-unintended-model-actions"&gt;a blog post&lt;/a&gt; on Friday, without naming the targeted websites. But two sources with knowledge of the incidents said Anthropic’s A.I. agents had submitted 20 visa applications through a form available on the State Department’s website. All the applications were incomplete and were not processed, they said.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://www.nytimes.com/2026/10/09/technology/anthropic-rogue-ai-agents.html"&gt;The New York Times&lt;/a&gt;, Anthropic Agents Tried to Fill Out Visa Forms on State Dept. Website&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/accidental-cyberattacks"&gt;accidental-cyberattacks&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/anthropic"&gt;anthropic&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="accidental-cyberattacks"/><category term="anthropic"/><category term="generative-ai"/><category term="ai"/><category term="llms"/></entry><entry><title>Deno is joining Cloudflare</title><link href="https://simonwillison.net/2026/Oct/9/deno-is-joining-cloudflare/" rel="alternate"/><published>2026-10-09T22:48:37+00:00</published><updated>2026-10-09T22:48:37+00:00</updated><id>https://simonwillison.net/2026/Oct/9/deno-is-joining-cloudflare/</id><summary type="html">
+    
+&lt;p&gt;&lt;strong&gt;&lt;a href="https://deno.com/blog/cloudflare"&gt;Deno is joining Cloudflare&lt;/a&gt;&lt;/strong&gt;&lt;/p&gt;
+The Deno team released the first version of &lt;a href="https://github.com/denoland/celld"&gt;celld&lt;/a&gt; back in August - their open source implementation of the Durable Objects pattern from Cloudflare Workers.&lt;/p&gt;
+&lt;p&gt;Today, Cloudflare are acquiring Deno outright, with the goal of building on &lt;code&gt;celld&lt;/code&gt; to "make workerd self-hosting a first-class supported way to build and run apps using the Workers programming model" (see &lt;a href="https://blog.cloudflare.com/deno-joins-cloudflare/"&gt;the Cloudflare blog&lt;/a&gt;.)&lt;/p&gt;
+&lt;p&gt;The bad news is that Deno itself will not be maintained by Cloudflare beyond the next year:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;We will support the &lt;a href="https://github.com/denoland/deno"&gt;Deno runtime&lt;/a&gt; for another year with monthly releases containing bug fixes and security updates. After that year we will end our development of the Deno runtime. Deno will remain open source, and we welcome others who want to continue its development.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Deno (and Node.js) creator Ryan Dahl explained that decision in &lt;a href="https://news.ycombinator.com/item?id=50019911#50023277"&gt;a comment&lt;/a&gt; on Hacker News:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;It's a joint decision and I agree with it. I'm most invested in its success and have put the most work into it - and I no longer think it's where I can do the most important work. There are some good ideas in Deno and it's well engineered - but it ultimately is not solving big problems. It has been sucked into the gravity well of node compatibility, which forces it to behave exactly as Node does. Why reimplement Node? It works. Marginal performance or UX or security benefits are not enough.&lt;/p&gt;
+&lt;p&gt;I'm interested in building powerful new abstractions. celld has been working remarkably well, depending only on object storage for coordination and persistence. It is not just a slightly different API to interact with the file system or network - it's an entirely new model for server development.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;My favorite feature of Deno has long been the permissions system, where you can run a Deno script and specify exactly which files and folders it can read and write to, and which network hosts it can access.&lt;/p&gt;
+&lt;p&gt;Node.js &lt;a href="https://nodejs.org/api/permissions.html"&gt;has a similar permissions model&lt;/a&gt; these days, added &lt;a href="https://nodejs.org/en/blog/release/v20.0.0"&gt;in Node v20.0.0&lt;/a&gt; in April 2023 and declared stable &lt;a href="https://nodejs.org/en/blog/release/v22.13.0"&gt;in Node v22.13.0&lt;/a&gt; in January 2025. They don't yet support allow-listing specific network hosts though - networking is either on or off.
+
+    &lt;p&gt;&lt;small&gt;&lt;/small&gt;Via &lt;a href="https://news.ycombinator.com/item?id=50019911"&gt;Hacker News&lt;/a&gt;&lt;/small&gt;&lt;/p&gt;
+
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/cloudfront"&gt;cloudfront&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/javascript"&gt;javascript&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/nodejs"&gt;nodejs&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ryan-dahl"&gt;ryan-dahl&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/sandboxing"&gt;sandboxing&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/deno"&gt;deno&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="cloudfront"/><category term="javascript"/><category term="nodejs"/><category term="ryan-dahl"/><category term="sandboxing"/><category term="deno"/></entry><entry><title>Quoting Matthew Green</title><link href="https://simonwillison.net/2026/Oct/9/matthew-green/" rel="alternate"/><published>2026-10-09T15:02:29+00:00</published><updated>2026-10-09T15:02:29+00:00</updated><id>https://simonwillison.net/2026/Oct/9/matthew-green/</id><summary type="html">
+    &lt;blockquote cite="https://twitter.com/matthew_d_green/status/2108552414978564418"&gt;&lt;p&gt;Everyone is very concerned about being respectable, so I’m going to be the goofball who raises worst-case possibilities. I think there is a 1% chance we live in Minicrypt, and a 15% chance we functionally lose confidence in our existing public-key encryption algorithms. [...]&lt;/p&gt;
+&lt;p&gt;The problem here is that the speed of AI producing surprises, and the speed of human beings replacing standards (even with the very best AI assistance) are just orders of magnitude different. You only recover from a surprise like this if you do the preparation in advance.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://twitter.com/matthew_d_green/status/2108552414978564418"&gt;Matthew Green&lt;/a&gt;, on Twitter. I looked it up and Minicrypt is Russell Impagliazzo’s &lt;a href="https://www.quantamagazine.org/which-computational-universe-do-we-live-in-20220418/"&gt;hypothetical world&lt;/a&gt; in which public-key encryption is impossible.&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/ai-security-research"&gt;ai-security-research&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/matthew-green"&gt;matthew-green&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/cryptography"&gt;cryptography&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/standards"&gt;standards&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="ai-security-research"/><category term="matthew-green"/><category term="cryptography"/><category term="standards"/><category term="llms"/><category term="ai"/><category term="generative-ai"/></entry><entry><title>A new feature for my blog, built using my voice</title><link href="https://simonwillison.net/2026/Oct/9/built-using-my-voice/" rel="alternate"/><published>2026-10-09T12:54:06+00:00</published><updated>2026-10-09T12:54:06+00:00</updated><id>https://simonwillison.net/2026/Oct/9/built-using-my-voice/</id><summary type="html">
+    &lt;p&gt;I shipped a new feature for my blog today: the &lt;a href="https://simonwillison.net/newsletters/"&gt;Newsletters&lt;/a&gt; page, which offers an index of all of the newsletters I've sent out, both my free &lt;a href="https://simonw.substack.com/"&gt;weekly Substack&lt;/a&gt; and my &lt;a href="https://github.com/sponsors/simonw/"&gt;monthly sponsors-only&lt;/a&gt; updates. I built the feature almost entirely using my voice, chatting away to my laptop while I cooked dinner.&lt;/p&gt;
+&lt;h4 id="codex-voice-mode"&gt;Codex voice mode&lt;/h4&gt;
+&lt;p&gt;I used the ChatGPT desktop app for this, in the Codex tab, using the voice conversation mode, running against a local development environment. Here's what that looks like:&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://static.simonwillison.net/static/2026/codex-voice.webp" alt="Three columns of the ChatGPT app. The left hand column shows my recent conversations. The middle column is a transcript of the conversation, with a throbbing black blob representing voice mode. The right hand column shows a local dev server version of my blog, with the Newsletters page visible." style="max-width: 100%;" /&gt;&lt;/p&gt;
+&lt;p&gt;I started the session against my local &lt;a href="https://github.com/simonw/simonwillisonblog"&gt;simonwillisonblog&lt;/a&gt; checkout by typing:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;Start dev server and open in browser&lt;/code&gt;&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;This gave me a preview of the site that it would be working on, and meant that I could later ask it to show me the new pages so I could visually track its progress.&lt;/p&gt;
+&lt;p&gt;Then I clicked the "Start new voice chat" button - that's &lt;em&gt;not&lt;/em&gt; the microphone button, it's the one to the right of it - and set my laptop up in the kitchen so I could talk to it while I cooked.&lt;/p&gt;
+&lt;h4 id="talking-to-my-computer"&gt;Talking to my computer&lt;/h4&gt;
+&lt;p&gt;I had a pretty good idea of what I wanted to build, and it's a simple enough Django feature that I was certain the model (in this case GPT-6 Astra High) would be able to do it. A new model, a migration, some view code, templates, and a couple of import functions to populate the database from external sources.&lt;/p&gt;
+&lt;p&gt;Here's an extract of my voice transcript that was captured by Codex:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Um, they do not. Um, this is going to be a new type of content. Um, it's not going to show up... Oh, hold on. Yeah, no- I do not want this to show up in my, um, tag pages and date archive pages and... Actually, no, I think... I don't want it on the tag pages. I don't want it on the, um, blog index page. But I think I do want it to show up on the date-based pages. You know, if you navigate to September the 19th, and I sent a newsletter on that page, I think I want that to show up. So... this is- so I think we probably need a new model. The other thing is that I want them searchable, uh the Substack ones are not searchable, because those are actually just copies of other s- on content on my blog. These monthly ones do contain unique content, and spe- and once they're... published, like once they're made public a month after they've gone out, I want them to show up on my search results.&lt;/p&gt;
+&lt;/blockquote&gt;
+&lt;p&gt;Apparently this was clear enough that the model knew what I wanted to build! You can read the full transcript, &lt;a href="https://en.wikipedia.org/wiki/Speech_disfluency"&gt;disfluencies&lt;/a&gt; and all, &lt;a href="https://gist.github.com/simonw/a65a22204f6f7228cc59b4bc34d7c7c8"&gt;in this Gist&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;We went on like this for about half an hour (the time it took to cook dinner). The model would reply and occasionally ask clarifying questions, then get to work modifying the code.&lt;/p&gt;
+&lt;h4 id="what-we-built"&gt;What we built&lt;/h4&gt;
+&lt;p&gt;We got a surprisingly long way entirely by voice:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;A new model and migration to represent imported newsletters in Django, plus Django Admin configuration for that&lt;/li&gt;
+&lt;li&gt;Four working imports:
+&lt;ul&gt;
+&lt;li&gt;The most recent Substack items via RSS&lt;/li&gt;
+&lt;li&gt;Every other Substack item via their undocumented API, which GPT-6 Astra knew about (it tried &lt;code&gt;/api/v1/archive&lt;/code&gt; directly) and then ran a search to figure out how to paginate it and found &lt;a href="https://wonderingaboutai.substack.com/p/i-connected-my-newsletter-archive"&gt;this article&lt;/a&gt; by Karen Spinner&lt;/li&gt;
+&lt;li&gt;All of my published monthly newsletters from my &lt;a href="https://github.com/simonw/monthly-newsletter-archive"&gt;simonw/monthly-newsletter-archive&lt;/a&gt; GitHub repository&lt;/li&gt;
+&lt;li&gt;My most recent private sponsors-only newsletter from a private repository&lt;/li&gt;
+&lt;/ul&gt;
+&lt;/li&gt;
+&lt;li&gt;The &lt;a href="https://simonwillison.net/newsletters/"&gt;/newsletters/&lt;/a&gt; and &lt;a href="https://simonwillison.net/newsletters/2026/"&gt;/newsletters/2026/&lt;/a&gt; public archive pages&lt;/li&gt;
+&lt;li&gt;Newsletters showing up on day and month archive pages too, but not on tag pages or my homepage&lt;/li&gt;
+&lt;li&gt;Weekly Substack newsletters link to Substack; archived monthly newsletters have their own pages&lt;/li&gt;
+&lt;li&gt;Integration with my site search engine&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;It was &lt;em&gt;almost&lt;/em&gt; ready to ship. The catch was the imports: Astra offered to export data from my local copy so I could import that into production, but I wanted it to work like my other import scripts. Since some of the data lived in a private GitHub repository, this would involve creating a new API key, and for that I knew I'd have to sit at the keyboard for a while.&lt;/p&gt;
+&lt;h4 id="finishing-it-with-a-review"&gt;Finishing it with a review&lt;/h4&gt;
+&lt;p&gt;Once I had finished cooking and judged it mostly feature-complete, I had Codex create a branch and open a pull request.&lt;/p&gt;
+&lt;p&gt;I reviewed the code in the GitHub PR interface. It was nearly what I needed, except it had chosen to use Git in a subprocess for one of the import scripts. I needed one of the imports to pull from a private Git repository, so I figured the API would be a better bet. I switched to typing and had Codex swap that out for an API-based import instead.&lt;/p&gt;
+&lt;p&gt;You can see the changes I made during the review &lt;a href="https://github.com/simonw/simonwillisonblog/pull/719"&gt;in the extra commits on the PR&lt;/a&gt;. I fixed the import mechanism and made a few tweaks to the display of those public pages. It took an additional half hour of typing-based prompting to get to the point where I was happy to deploy it to production by landing the PR.&lt;/p&gt;
+&lt;h4 id="the-end-result"&gt;The end result&lt;/h4&gt;
+&lt;p&gt;You can see the end result at the new &lt;a href="https://simonwillison.net/newsletters/"&gt;newsletters index page&lt;/a&gt;, or view the &lt;a href="https://simonwillison.net/newsletters/monthly-2026-08-august/"&gt;page for a previous monthly newsletter&lt;/a&gt;.&lt;/p&gt;
+&lt;p&gt;&lt;img src="https://static.simonwillison.net/static/2026/newsletters-page.webp" alt="Newsletters page. It shows two Substack posts (with thumbnails) and one LLM digest Sponsors-only newsletter with a list of headings. On the right is a CTA to subscribe to my Substack and another one for my $10/month monthly briefing newsletter." style="max-width: 100%;" /&gt;&lt;/p&gt;
+&lt;p&gt;The index page shows my most recent Substack weekly newsletters and GitHub sponsors monthly newsletters mixed together in reverse chronological order. Further down the page are links to my by-year archive pages.&lt;/p&gt;
+&lt;p&gt;GPT-6 Astra designed the page, and then tweaked that design based on my vocal feedback from glancing at the local preview across the kitchen.&lt;/p&gt;
+&lt;h4 id="better-for-multi-tasking-than-as-a-daily-driver"&gt;Better for multi-tasking than as a daily driver&lt;/h4&gt;
+&lt;p&gt;OpenAI &lt;em&gt;love&lt;/em&gt; using voice-driven demos like this one for &lt;a href="https://simonwillison.net/2026/Sep/29/openai-devday-2026-live-blog/#live-update-504"&gt;things like DevDay&lt;/a&gt; - and they do work well in that environment. I don't think this is going to be a daily driver for me though.&lt;/p&gt;
+&lt;p&gt;I've &lt;a href="https://simonwillison.net/search/?q=walking+dog"&gt;written before&lt;/a&gt; about how much "work" I get done using ChatGPT voice mode on my phone while walking the dog - mostly research and brainstorming, but occasionally actual development work by having ChatGPT write and test out snippets of code.&lt;/p&gt;
+&lt;p&gt;This feels different. The addition of the visual preview, plus being able to type or paste things in via the keyboard when I need to communicate something that doesn't work vocally, makes this a much more powerful way of interacting with a coding agent.&lt;/p&gt;
+&lt;p&gt;I still switch back to typing once I get down to the details of things though. Being able to paste in examples and error messages, or directly highlight the code or feature that needs changing, remains more efficient than trying to describe it in words.&lt;/p&gt;
+&lt;p&gt;I mainly work from home, which is good because there's no way I'd want to talk to my computer like this in a shared workspace!&lt;/p&gt;
+&lt;p&gt;The killer feature for me is the ability to multi-task. I usually cook with a podcast or TikTok running; now I can actually build stuff instead.&lt;/p&gt;
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/text-to-speech"&gt;text-to-speech&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/openai"&gt;openai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/newsletter"&gt;newsletter&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/coding-agents"&gt;coding-agents&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/codex"&gt;codex&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/speech-to-text"&gt;speech-to-text&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/site-upgrades"&gt;site-upgrades&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="text-to-speech"/><category term="ai"/><category term="openai"/><category term="generative-ai"/><category term="llms"/><category term="newsletter"/><category term="coding-agents"/><category term="codex"/><category term="speech-to-text"/><category term="site-upgrades"/></entry><entry><title>ttok 1.0</title><link href="https://simonwillison.net/2026/Oct/9/ttok/" rel="alternate"/><published>2026-10-09T00:34:43+00:00</published><updated>2026-10-09T00:34:43+00:00</updated><id>https://simonwillison.net/2026/Oct/9/ttok/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/ttok/releases/tag/1.0"&gt;ttok 1.0&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;I released &lt;a href="https://simonwillison.net/2026/Oct/8/ttok/"&gt;ttok 0.4&lt;/a&gt;, ran &lt;code&gt;uv tool upgrade ttok&lt;/code&gt;, piped a file into the new version... and realized that it was defaulting to the GPT-4 tokenizer when it should very clearly default to GPT-5/GPT-6 instead!&lt;/p&gt;
+&lt;p&gt;I figured switching the default was a reasonable excuse to finally ship a 1.0.&lt;/p&gt;
+&lt;p&gt;OpenAI haven't actually confirmed that GPT-6 uses the same tokenizer as the GPT-5 family yet - there's an &lt;a href="https://github.com/openai/tiktoken/issues/608"&gt;angry issue about it&lt;/a&gt; - but I found &lt;a href="https://github.com/williamliu-ai/token-count-compare/commit/8d8a2178538bb37beb548fc37378135e4ff4b0c8"&gt;this commit&lt;/a&gt; by William Liu which reports on an experiment he ran confirming that the tokenizers are likely the same:&lt;/p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;All seven GPT models (5.5, 5.6 Sol/Terra/Luna, 6 Astra/Sol/Luna) report 44,794 tokens and match each other on every one of the 31 fixtures. GPT-6 introduces no input-count change on this corpus.&lt;/p&gt;
+&lt;/blockquote&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/projects"&gt;projects&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/openai"&gt;openai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/tokenization"&gt;tokenization&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="projects"/><category term="ai"/><category term="openai"/><category term="generative-ai"/><category term="llms"/><category term="tokenization"/></entry><entry><title>ttok 0.4</title><link href="https://simonwillison.net/2026/Oct/8/ttok/" rel="alternate"/><published>2026-10-08T23:34:28+00:00</published><updated>2026-10-08T23:34:28+00:00</updated><id>https://simonwillison.net/2026/Oct/8/ttok/</id><summary type="html">
+    
+        &lt;p&gt;&lt;strong&gt;Release:&lt;/strong&gt; &lt;a href="https://github.com/simonw/ttok/releases/tag/0.4"&gt;ttok 0.4&lt;/a&gt;&lt;/p&gt;
+        &lt;p&gt;&lt;code&gt;ttok&lt;/code&gt; is my CLI tool for counting tokens, using OpenAI's open source &lt;a href="https://github.com/openai/tiktoken"&gt;tiktoken&lt;/a&gt; library.&lt;/p&gt;
+&lt;p&gt;It hasn't been in updated in a couple of years, but I finally fixed a Click warning, updated CI, and added a &lt;code&gt;--list-models&lt;/code&gt; command to list available models.&lt;/p&gt;
+&lt;p&gt;It works with &lt;code&gt;uvx&lt;/code&gt;, so you can count tokens in anything like this:&lt;/p&gt;
+&lt;pre&gt;&lt;code&gt;cat file.txt | uvx ttok
+&lt;/code&gt;&lt;/pre&gt;
+    
+    
+        &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/projects"&gt;projects&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/openai"&gt;openai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/generative-ai"&gt;generative-ai&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/llms"&gt;llms&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/tokenization"&gt;tokenization&lt;/a&gt;&lt;/p&gt;
+    
+
+</summary><category term="projects"/><category term="ai"/><category term="openai"/><category term="generative-ai"/><category term="llms"/><category term="tokenization"/></entry><entry><title>Quoting Carson Gross</title><link href="https://simonwillison.net/2026/Oct/8/carson-gross/" rel="alternate"/><published>2026-10-08T21:05:44+00:00</published><updated>2026-10-08T21:05:44+00:00</updated><id>https://simonwillison.net/2026/Oct/8/carson-gross/</id><summary type="html">
+    &lt;blockquote cite="https://htmx.org/essays/yes-and/"&gt;&lt;p&gt;Computer programming is, fundamentally, about two things:&lt;/p&gt;
+&lt;ul&gt;
+&lt;li&gt;Problem-solving using computers&lt;/li&gt;
+&lt;li&gt;Learning to control complexity while solving these problems&lt;/li&gt;
+&lt;/ul&gt;
+&lt;p&gt;I have a hard time imagining a future where knowing how to solve problems with computers and how to control the complexity of those solutions is &lt;em&gt;less&lt;/em&gt; valuable than it is today, so I think it will continue to be a viable career even with the advent of AI tools.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://htmx.org/essays/yes-and/"&gt;Carson Gross&lt;/a&gt;&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/computer-science"&gt;computer-science&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/carson-gross"&gt;carson-gross&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/careers"&gt;careers&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/ai"&gt;ai&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="computer-science"/><category term="carson-gross"/><category term="careers"/><category term="ai"/></entry><entry><title>Quoting Ben Affleck</title><link href="https://simonwillison.net/2026/Oct/7/ben-affleck/" rel="alternate"/><published>2026-10-07T23:14:58+00:00</published><updated>2026-10-07T23:14:58+00:00</updated><id>https://simonwillison.net/2026/Oct/7/ben-affleck/</id><summary type="html">
+    &lt;blockquote cite="https://www.youtube.com/watch?v=HzraLR2VkNM&amp;amp;t=2259s"&gt;&lt;p&gt;I've always been kind of into computers since I was young. And then when film started to move from analog film to digital, I became more interested in that aspect of it. And the visual effects workflow for many years has included machine learning.&lt;/p&gt;
+&lt;p&gt;So I can write like pretty shitty Python scripts and stuff like that because with convolutional neural networks, which were the sort of precursors to what the transformer can do, which is just much more computation simultaneously, you would do things like look at what's called a tensor, which is just the numerical translation of a visual image in numbers — like the batch number, the frame number, the red, green, and blue values of each pixel in each frame. &lt;/p&gt;
+&lt;p&gt;And a tensor, you use a convolutional neural network to identify patterns in that that would reveal what's called edge detection or feature extraction, which is just identifying patterns enough to know like this is where the window ledge is, so we can more easily take the green screen image out and replace it with something.&lt;/p&gt;&lt;/blockquote&gt;
+&lt;p class="cite"&gt;&amp;mdash; &lt;a href="https://www.youtube.com/watch?v=HzraLR2VkNM&amp;amp;t=2259s"&gt;Ben Affleck&lt;/a&gt;, Pythonista&lt;/p&gt;
+
+    &lt;p&gt;Tags: &lt;a href="https://simonwillison.net/tags/machine-learning"&gt;machine-learning&lt;/a&gt;, &lt;a href="https://simonwillison.net/tags/python"&gt;python&lt;/a&gt;&lt;/p&gt;
+
+
+
+</summary><category term="machine-learning"/><category term="python"/></entry></feed>
