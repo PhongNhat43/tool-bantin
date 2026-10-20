@@ -1,14 +1,30 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
+import { useRouter } from "next/navigation";
+import { BASE_PATH } from "@/lib/config";
 import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<"idle" | "sending" | "sent" | "error">(
     "idle",
   );
   const [message, setMessage] = useState("");
+
+  // Đã đăng nhập thì vào thẳng feed.
+  useEffect(() => {
+    let active = true;
+    createClient()
+      .auth.getSession()
+      .then(({ data: { session } }) => {
+        if (active && session) router.replace("/");
+      });
+    return () => {
+      active = false;
+    };
+  }, [router]);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,7 +35,8 @@ export default function LoginPage() {
     const { error } = await supabase.auth.signInWithOtp({
       email: email.trim(),
       options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
+        // trailingSlash: true -> callback là thư mục /auth/callback/
+        emailRedirectTo: `${window.location.origin}${BASE_PATH}/auth/callback/`,
       },
     });
 

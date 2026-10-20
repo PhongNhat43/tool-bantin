@@ -1,10 +1,11 @@
-import { redirect } from "next/navigation";
+"use client";
+
+import { useEffect, useState } from "react";
 import { LogoutButton } from "@/components/logout-button";
-import { createClient } from "@/lib/supabase/server";
+import { RequireAuth } from "@/components/require-auth";
+import { createClient } from "@/lib/supabase/client";
 
-export const dynamic = "force-dynamic";
-
-type SourceRef = { name: string; type: string };
+type SourceRef = { name: string } | { name: string }[] | null;
 
 type ItemRow = {
   id: string;
@@ -12,68 +13,84 @@ type ItemRow = {
   url: string;
   score: number;
   published_at: string | null;
-  sources: SourceRef | SourceRef[] | null;
+  sources: SourceRef;
 };
 
-function sourceName(source: ItemRow["sources"]): string {
+function sourceName(source: SourceRef): string {
   if (!source) return "không rõ nguồn";
   if (Array.isArray(source)) return source[0]?.name ?? "không rõ nguồn";
   return source.name;
 }
 
-export default async function Home() {
-  const supabase = await createClient();
+function LatestItems() {
+  const [items, setItems] = useState<ItemRow[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  useEffect(() => {
+    const supabase = createClient();
+    let active = true;
 
-  if (!user) redirect("/login");
+    supabase
+      .from("items")
+      .select("id, title, url, score, published_at, sources(name)")
+      .order("published_at", { ascending: false, nullsFirst: false })
+      .limit(10)
+      .then(({ data, error: queryError }) => {
+        if (!active) return;
+        if (queryError) {
+          setError(queryError.message);
+          setItems([]);
+          return;
+        }
+        setItems((data ?? []) as unknown as ItemRow[]);
+      });
 
-  const { data, error } = await supabase
-    .from("items")
-    .select("id, title, url, score, published_at, sources(name, type)")
-    .order("published_at", { ascending: false, nullsFirst: false })
-    .limit(10);
+    return () => {
+      active = false;
+    };
+  }, []);
 
-  const items = (data ?? []) as unknown as ItemRow[];
+  if (error) return <p className="error">Lỗi đọc DB: {error}</p>;
+  if (!items) return <p className="muted">Đang tải tin…</p>;
+  if (items.length === 0) return <p className="muted">Chưa có item nào trong DB.</p>;
 
   return (
-    <main>
-      <header className="topbar">
-        <div>
-          <h1>Bản tin AI</h1>
-          <p className="muted">{user.email}</p>
-        </div>
-        <LogoutButton />
-      </header>
+    <ol className="item-list">
+      {items.map((item) => (
+        <li key={item.id}>
+          <span className="score">{item.score}</span>
+          <div>
+            <a href={item.url} target="_blank" rel="noreferrer">
+              {item.title}
+            </a>
+            <p className="meta">
+              {sourceName(item.sources)}
+              {item.published_at
+                ? ` · ${new Date(item.published_at).toLocaleString("vi-VN")}`
+                : ""}
+            </p>
+          </div>
+        </li>
+      ))}
+    </ol>
+  );
+}
 
-      <h2>10 tin mới nhất</h2>
+export default function Home() {
+  return (
+    <RequireAuth>
+      <main>
+        <header className="topbar">
+          <div>
+            <h1>Bản tin AI</h1>
+            <p className="muted">10 tin mới nhất</p>
+          </div>
+          <LogoutButton />
+        </header>
 
-      {error ? (
-        <p className="error">Lỗi đọc DB: {error.message}</p>
-      ) : items.length === 0 ? (
-        <p className="muted">Chưa có item nào trong DB.</p>
-      ) : (
-        <ol className="item-list">
-          {items.map((item) => (
-            <li key={item.id}>
-              <span className="score">{item.score}</span>
-              <div>
-                <a href={item.url} target="_blank" rel="noreferrer">
-                  {item.title}
-                </a>
-                <p className="meta">
-                  {sourceName(item.sources)}
-                  {item.published_at
-                    ? ` · ${new Date(item.published_at).toLocaleString("vi-VN")}`
-                    : ""}
-                </p>
-              </div>
-            </li>
-          ))}
-        </ol>
-      )}
-    </main>
+        <h2>10 tin mới nhất</h2>
+        <LatestItems />
+      </main>
+    </RequireAuth>
   );
 }
