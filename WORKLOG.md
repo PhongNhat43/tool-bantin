@@ -500,3 +500,51 @@ E2E thật trên trình duyệt (http://localhost:3000/tool-bantin/):
 - 3.4 (deploy) đổi từ Vercel sang GitHub Pages — chờ chốt lại nội dung.
 
 - Commit: `d0b5ab0` (code) + commit docs.
+
+## 20/10/2026 — Task 3.2: Màn Feed (client-side, static export)
+
+**Việc đã làm**
+- `lib/items.ts`: query đọc-only cho 3 khối (`.gte("score",70)` limit 20; 40–69 trong 24h
+  limit 30; Tất cả `.range()` + `.or("title.ilike...,content.ilike...")` + `.eq("source_id")`),
+  `fetchSources`, `fetchLastRun`. `lib/format.ts`: thời gian tương đối, tier điểm, nhãn nguồn,
+  breakdown từ `engagement.score_breakdown`.
+- `components/`: `site-header` (sticky, tab Feed/Nguồn, theme toggle, Chạy ngay, Đăng xuất),
+  `item-row` (ô điểm vuông + tiêu đề/meta, bấm mở rộng: nội dung cắt 500 ký tự, breakdown
+  4 thành phần, engagement gốc, link gốc `_blank`), `theme-toggle` (nhãn đổi bằng CSS theo
+  `[data-theme]`, không state → không lệch hydration), `feed-sections` (loading suy ra từ
+  "dữ liệu thuộc request nào" thay vì setState đồng bộ trong effect), `run-now-button`.
+- `app/globals.css` viết lại theo token light/dark đúng spec; `app/layout.tsx` thêm script
+  inline trong `<head>` set `data-theme` trước khi paint → không nháy theme khi tải lại.
+- `app/nguon/page.tsx`: placeholder cho 3.3.
+- `supabase/migrations/20261021_rpc_grant.sql`: grant `trigger_run_cycle` cho authenticated,
+  **revoke `anon`**, thêm `run_cycle_result()` (security definer, chỉ đọc `net._http_response`)
+  để dashboard lấy tóm tắt kỳ chạy.
+
+**Kết quả test (dữ liệu thật, serve `out/` sau basePath tại localhost:3000/tool-bantin/)**
+- `npm run lint` sạch, `npm run build` pass → `out/` có `/`, `/login`, `/auth/callback`, `/nguon`.
+- "Cần xem ngay" = **2 tin điểm 70** (đúng như chốt); "Hôm nay" = 2 tin (56, 40); "Tất cả" = 50.
+- Bấm 1 dòng → mở rộng đúng: nội dung 500 ký tự, `Chủ đề 40/40 · Tương tác 30/30 · Độ mới 0/20 ·
+  Cross-source 0/10`, engagement `20 bình luận / 72 reactions`, link "Mở bài gốc".
+- Theme: bấm → `data-theme=dark`, `localStorage=bantin-theme:dark`, nền `rgb(18,18,18)`;
+  reload vẫn dark, nhãn nút đúng; script theme nằm trong `<head>`, trước `<body>`.
+- Tìm "prompt" → 10 tin khớp (title + content); lọc nguồn GitHub → 1 tin (đúng giao nhau);
+  "Tải thêm" 50 → 100 dòng.
+- "Chạy ngay" (sau khi apply migration grant): nút → "⏳ Đang chạy…" → ~4–8s sau hiện
+  `Xong: 3/3 nguồn · chấm 0 tin · 0 thông báo` (đúng JSON của run-cycle) + 3 khối tự tải lại.
+- Đăng xuất → `/login/`; mở lại `/tool-bantin/` khi chưa login → đẩy về `/login/`.
+- RPC: `anon` gọi `run_cycle_result` → `401 permission denied`; `authenticated` → 200.
+
+**Phát hiện (đã sửa)**
+- `trigger_run_cycle()` từ 2.3 **còn grant EXECUTE cho `anon`**: Supabase `alter default privileges`
+  cấp EXECUTE cho anon/authenticated khi tạo function trong `public`, và `revoke ... from public`
+  không gỡ quyền cấp trực tiếp → ai có anon key cũng trigger được run-cycle. Migration 3.2
+  revoke `anon` (đã verify `proacl` chỉ còn postgres/authenticated/service_role).
+
+**Ghi chú**
+- RPC `trigger_run_cycle()` là `void` (pg_net async) nên **không thể** chờ kết quả trong cùng
+  transaction: `statement_timeout` của role `authenticated` (8s) cắt statement, và function-level
+  `set statement_timeout` không gỡ được timer đã arm (đã thử thực tế). Vì vậy dùng
+  `run_cycle_result()` + poll 2s/lần, tối đa 120s.
+- User test `rpc-test-3b@maxxspace.com` đã xoá sau test.
+
+- Commit: `ec8817f`.
