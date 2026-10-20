@@ -254,3 +254,48 @@ deno test --env-file=.env --allow-net --allow-env --allow-read supabase/function
 
 - Commit code: `5e3e9de` (2 file mới: `notify.ts` + `notify_test.ts`).
 - Ghi chú DB: Merlin đã bắn dữ liệu Facebook thật → DB hiện **88 items** (github 19 + hackernews 15 + rss 30 + facebook 24), `notification_log` 0 row.
+
+## 2026-10-20 — Task 2.0: `run-cycle` (orchestrator collect → score → notify)
+
+**Mục đích:** 1 endpoint duy nhất để pg_cron gọi mỗi 2h — chạy hết collector, chấm điểm tin mới, gửi thông báo; một nguồn chết không giết cả kỳ.
+
+**Đã làm — collector API (không đổi nghiệp vụ):**
+- `github-collector/collector.ts`, `hackernews-collector/collector.ts`, `rss-collector/collector.ts`: export thêm `collectSource(supabase, source)` (rss đã có hàm private, chỉ export). `runCollector()` giữ nguyên hành vi cũ cho entrypoint/test, giờ chỉ đọc source rồi gọi `collectSource`.
+- `run-cycle` truyền đúng row `sources` vào từng collector, nên mỗi source có try/catch riêng; `type='facebook'` bỏ qua (nguồn bị động, Merlin bắn qua `ingest-facebook`).
+
+**Đã làm — `run-cycle/collector.ts`:**
+- Đọc `sources` `enabled=true`; map `github`/`hackernews`/`rss` → collector; type lạ / chưa có collector → log bỏ qua.
+- Chấm tối đa 200 item/kỳ: `score=0 AND engagement->>score_breakdown IS NULL`, order `published_at` mới trước, null cuối.
+- Cross-source: query items 24h qua, build index `normalizeUrl(url)` và title chuẩn hóa (lowercase, bỏ ký tự đặc biệt, gộp khoảng trắng) → tập `source_id`; chỉ tính khi có source KHÁC trùng.
+- Ghi `score` + `engagement = {...engagement cũ, score_breakdown}` (không gửi NULL — bài học #38).
+- Notify: chỉ item có `published_at` ≤48h; `notify_now` hoặc `score>=70` → `sendInstant`; `40<=score<70` → gom 1 `sendDigest` cuối kỳ; lỗi gửi 1 tin không chặn tin khác.
+- Summary: `{sources_ok, sources_failed, scored, notified_instant, notified_digest}`.
+
+**Đã làm — `run-cycle/index.ts` + `_shared/secret.ts`:**
+- `--once` chạy 1 kỳ; HTTP POST auth header `x-cron-secret` với `CRON_SECRET` (fail-closed), sai/thiếu → 401; thiếu env → lỗi rõ tên biến.
+- Tách `checkSecret`/`timingSafeEqual` sang `_shared/secret.ts`; `ingest-facebook/ingest.ts` re-export để `index.ts` cũ không phải sửa.
+
+**Nghiệm thu local (DB thật):**
+- Kỳ 1: `sources enabled: 6` → 3 collector chạy OK (GitHub 0 mới, HN +4, RSS +1), `sources_failed: 0`; chấm **117 item** (backfill toàn bộ tồn đọng), 117/117 có `score_breakdown`; **digest 4 tin gửi Telegram thật** (`notification_log` 4 row): score 56 FB prompt, 40 FB Gemini, 40 RSS datasette, 50 RSS llm-echo. Không có instant vì 2 tin 70 điểm đều cũ >48h.
+- Kỳ 2 ngay sau: `scored: 0`, không chấm lại; không gửi lặp.
+- Spot-check: 95 item score>0; 22 item bị cổng T2 loại có breakdown toàn 0 (để không chấm lại); breakdown đủ 4 thành phần `topic/engagement/recency/cross_source`.
+- **Test instant ≥70:** chèn 1 bài FB test qua logic `ingestFacebook` (group Vibe Code, reactions 100 + comments 20, nhóm A, published mới) → `scoreItem` cho **90 điểm** (topic 40 + engagement 30 + recency 20), `sendInstant` → `sent`, `notification_log` có row. Sau đó xoá row log + item test; DB về 117 item, `notification_log` còn 4 row digest.
+
+**Deploy + auth:**
+- `supabase functions deploy run-cycle --project-ref gkyneqfagcqgliwtxyfs --no-verify-jwt` → OK.
+- `GET /functions/v1/run-cycle` → 200 health; `POST` sai secret → **401**; `POST` không secret → **401**; `POST` đúng secret → 200 `{ok:true,sources_ok:3,sources_failed:0,scored:0,notified_instant:0,notified_digest:0}`.
+- Đã thêm `CRON_SECRET` vào `.env` local (không commit) và set Supabase secret cùng giá trị.
+
+**Test/lint:**
+```
+deno check supabase/functions/ → Checked 21 files
+deno lint  supabase/functions/ → Checked 21 files
+deno test --env-file=.env --allow-net --allow-env --allow-read supabase/functions/
+  → 26 passed (6 steps) | 0 failed
+```
+- Commit code: `4be1a82` (7 file: 3 collector refactor + ingest re-export + `_shared/secret.ts` + 2 file `run-cycle`).
+
+**Blind spot / lưu ý:**
+- Tiêu chí "tin ≥70 trong 88 tin hiện có → Telegram" không đạt bằng dữ liệu thật: 2 tin 70 điểm đều >48h nên theo DECISIONS #44 không báo. Đã xác nhận nhánh instant bằng 1 item test rồi xoá (xem trên); digest thật 4 tin vẫn đã vào group.
+- `INGEST_SECRET` trong `.env` local **không khớp** secret đang deploy (POST thử trả 401), trong khi Merlin vẫn bắn được → secret production khác. Không đổi secret production; test instant gọi trực tiếp `ingestFacebook`.
+- Test RSS "source thật không bị đụng tới" flaky khi feed Simon có bài mới: lần đầu checkpoint tiến → fail, chạy lại pass. Chưa sửa (ngoài scope 2.0), cần ghi nhận để xử lý sau.

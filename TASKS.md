@@ -19,10 +19,10 @@
   - Tiêu chí xong mỗi collector: chạy 1 lệnh, log rõ fetch/new/dedup, dữ liệu vào đúng bảng `items`
 
 ## Phase 2 — Lọc + Thông báo (final plan chốt 19/10/2026, chi tiết đầy đủ trong AGENTS.md mục 6)
-- [ ] 2.0 `run-cycle`: orchestrator — đọc `sources` enabled → gọi từng collector (try/catch riêng từng source) → scoring → notify; pg_cron mỗi 2h gọi run-cycle qua pg_net, auth bằng CRON_SECRET — **← TASK TIẾP THEO** (1.3 reddit vẫn chờ phê duyệt API; 1.6 xong, đang chờ Merlin bắn dữ liệu FB thật)
+- [x] 2.0 `run-cycle`: orchestrator — đọc `sources` enabled → gọi từng collector (try/catch riêng từng source) → scoring → notify; pg_cron mỗi 2h gọi run-cycle qua pg_net, auth bằng CRON_SECRET (20/10, 4be1a82 — 3 collector chạy độc lập, 117 item backfill đủ breakdown, digest 4 tin gửi thật, instant test 90 điểm xác nhận rồi xoá, deploy + sai secret → 401)
 - [x] 2.1 `scoring.ts` trong `_shared/`: đúng công thức AGENTS.md mục 6; breakdown lưu vào engagement.score_breakdown, score lưu tổng (19/10, 79485ce — 11 test offline)
 - [x] 2.2 `notify-telegram`: ≥70 gửi ngay 1 tin/item (preview bật); 40–69 gom 1 digest/kỳ dạng bullet (tắt preview); ghi notification_log chống gửi lặp; trigger báo ngay: nhóm A + bài <24h, cross-source ≥2/24h, breaking + engagement hot (19/10, 5e3e9de — lib `_shared/notify.ts`, 9 test offline + gửi thật vào group "Bản tin AI")
-- [ ] 2.3 Bật extensions pg_cron + pg_net trong dashboard Supabase; job chạy mỗi 2h vào phút 0
+- [ ] 2.3 Bật extensions pg_cron + pg_net trong dashboard Supabase; job chạy mỗi 2h vào phút 0 — **← TASK TIẾP THEO**
   - Tiêu chí xong: có tin mới vào DB mỗi 2h, Telegram nhận được tin điểm cao
 
 ## Phase 3 — Dashboard web (Next.js) — thiết kế final chốt 19/10/2026, xem demo tại dashboard-demo.html v2
