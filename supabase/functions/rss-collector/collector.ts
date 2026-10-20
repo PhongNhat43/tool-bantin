@@ -351,14 +351,14 @@ async function saveCheckpoint(
   }
 }
 
-interface RssSourceRow {
+export interface RssSourceRow {
   id: string;
   name: string;
   config: unknown;
 }
 
 /** Chạy 1 feed. Throw khi lỗi không tự xử lý được; caller bọc try/catch. */
-async function collectSource(
+export async function collectSource(
   supabase: ReturnType<typeof createSupabaseClient>,
   source: RssSourceRow,
 ): Promise<void> {

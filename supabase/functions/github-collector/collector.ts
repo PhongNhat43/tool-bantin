@@ -35,6 +35,13 @@ interface GithubSourceConfig {
   [key: string]: unknown;
 }
 
+/** Row `sources` tối thiểu mà collector cần — run-cycle truyền vào. */
+export interface GithubSourceRow {
+  id: string;
+  name: string;
+  config: unknown;
+}
+
 interface GithubRepo {
   id: number;
   full_name: string;
@@ -204,7 +211,14 @@ export async function runCollector(): Promise<void> {
     return;
   }
 
-  const source = sources[0];
+  await collectSource(supabase, sources[0]);
+}
+
+/** 1 source github cụ thể — `run-cycle` đọc sources rồi gọi trực tiếp hàm này. */
+export async function collectSource(
+  supabase: ReturnType<typeof createSupabaseClient>,
+  source: GithubSourceRow,
+): Promise<void> {
   const config = (source.config ?? {}) as GithubSourceConfig;
 
   const query = config.query;
